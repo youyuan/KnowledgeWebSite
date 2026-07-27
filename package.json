@@ -1,0 +1,34 @@
+{
+  "name": "knowledge-website",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server/index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "start": "node server/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youyuan/KnowledgeWebSite.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/youyuan/KnowledgeWebSite/issues"
+  },
+  "homepage": "https://github.com/youyuan/KnowledgeWebSite#readme",
+  "private": true,
+  "dependencies": {
+    "@highlightjs/cdn-assets": "^11.11.1",
+    "express": "^5.2.1",
+    "marked": "^18.0.7"
+  },
+  "devDependencies": {
+    "supertest": "^7.2.2"
+  }
+}
