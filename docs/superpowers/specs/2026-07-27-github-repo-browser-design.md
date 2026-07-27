@@ -68,7 +68,7 @@ KnowledgeWebSite/
 | 方法 | 路径 | 说明 |
 |---|---|---|
 | GET | `/api/repos` | 仓库列表（名称、URL、克隆时间、状态） |
-| POST | `/api/repos` | 添加仓库 `{url, token?}` → 异步 clone |
+| POST | `/api/repos` | 添加仓库 `{url, token?}` → 立即返回（状态 `cloning`），后端异步 clone，完成后状态变为 `ready` 或 `error`，前端轮询 GET `/api/repos` 刷新 |
 | POST | `/api/repos/:id/pull` | git pull 更新 |
 | DELETE | `/api/repos/:id` | 删除仓库及本地目录 |
 | GET | `/api/repos/:id/tree` | 目录树（标注 `.md`/`.html`/其他） |
@@ -81,7 +81,7 @@ KnowledgeWebSite/
 
 - 所有 `path` 参数经 `path.resolve` 后必须仍位于该仓库目录内，拒绝 `..` 逃逸
 - 仓库 id 为 `owner__repo` 形式，校验字符白名单（字母、数字、`-`、`_`、`.`）
-- 私有仓库：token 拼入 clone URL（`https://<token>@github.com/...`），仅用于 clone，config.json 中保存原始 URL 不保存 token
+- 私有仓库：token 拼入 clone URL（`https://<token>@github.com/...`），仅用于 clone，config.json 中保存原始 URL 不保存 token；私有仓库的后续 pull 依赖用户自行配置 git credential helper，不做额外处理
 
 ## 5. 前端交互
 
