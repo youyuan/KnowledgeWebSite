@@ -13,6 +13,16 @@ function wrapGitError(err) {
   return err;
 }
 
+// clone 完成前仓库可能已被 DELETE 移除，此时静默跳过状态更新；
+// 其他异常仅记录日志，避免 promise 链内抛错导致未处理 rejection 使进程崩溃
+function setStatus(id, patch) {
+  try {
+    store.updateRepo(id, patch);
+  } catch (err) {
+    if (!err || err.status !== 404) console.error('更新仓库状态失败:', err);
+  }
+}
+
 router.get('/', (req, res) => res.json(store.listRepos()));
 
 router.post('/', (req, res, next) => {
@@ -25,9 +35,9 @@ router.post('/', (req, res, next) => {
     });
     // 异步 clone，完成后更新状态
     git.clone(url, token, store.repoDir(id))
-      .then(() => store.updateRepo(id, { status: 'ready', error: null }))
+      .then(() => setStatus(id, { status: 'ready', error: null }))
       .catch(err => {
-        store.updateRepo(id, { status: 'error', error: err.stderr || err.message });
+        setStatus(id, { status: 'error', error: err.stderr || err.message });
         fs.rm(store.repoDir(id), { recursive: true, force: true }, () => {});
       });
     res.status(202).json(repo);

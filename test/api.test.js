@@ -85,3 +85,45 @@ test('删除仓库移除目录与配置', async () => {
   assert.ok(!fs.existsSync(dir));
   assert.equal(store.listRepos().length, 0);
 });
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+test('clone 进行中删除仓库不产生未处理 rejection（clone 成功路径）', async () => {
+  const rejections = [];
+  const onRejection = reason => rejections.push(reason);
+  process.on('unhandledRejection', onRejection);
+  try {
+    const res = await request(app).post('/api/repos').send({ url: srcDir });
+    assert.equal(res.status, 202);
+    // clone 尚未完成即删除
+    const del = await request(app).delete(`/api/repos/${res.body.id}`);
+    assert.equal(del.status, 200);
+    // 等待足够时间让 clone 完成的 .then 回调执行（回调会对已删除 id 更新状态）
+    await sleep(2000);
+    assert.deepEqual(rejections, [], `存在未处理 rejection: ${rejections.join(', ')}`);
+    assert.equal(store.listRepos().length, 0);
+    // 后续请求仍正常
+    const list = await request(app).get('/api/repos');
+    assert.equal(list.status, 200);
+  } finally {
+    process.removeListener('unhandledRejection', onRejection);
+  }
+});
+
+test('clone 进行中删除仓库不产生未处理 rejection（clone 失败路径）', async () => {
+  const rejections = [];
+  const onRejection = reason => rejections.push(reason);
+  process.on('unhandledRejection', onRejection);
+  try {
+    const res = await request(app).post('/api/repos').send({ url: '/nonexistent/bad-repo-2' });
+    assert.equal(res.status, 202);
+    const del = await request(app).delete(`/api/repos/${res.body.id}`);
+    assert.equal(del.status, 200);
+    // 等待足够时间让 clone 失败的 .catch 回调执行
+    await sleep(2000);
+    assert.deepEqual(rejections, [], `存在未处理 rejection: ${rejections.join(', ')}`);
+    assert.equal(store.listRepos().length, 0);
+  } finally {
+    process.removeListener('unhandledRejection', onRejection);
+  }
+});
