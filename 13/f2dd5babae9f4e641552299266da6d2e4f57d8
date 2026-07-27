@@ -1,0 +1,29 @@
+package.json
+  s_05a36802ec29e2::t_623504b2b57fac 25
+  s_05a36802ec29e2::t_7d1a2f264c34b6 30-32
+  s_05a36802ec29e2::t_a31b111565d63b 1-24,26-29,33-34
+test/health.test.js
+  s_05a36802ec29e2::t_09b721fcaebda1 1-10
+package-lock.json
+  s_05a36802ec29e2::t_a261b73a5f4a22 1-1047
+server/index.js
+  s_05a36802ec29e2::t_8f33cb3de1ebcc 1-27
+.gitignore
+  s_05a36802ec29e2::t_1907697a569921 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "13f2dd5babae9f4e641552299266da6d2e4f57d8",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": null
+    }
+  }
+}
