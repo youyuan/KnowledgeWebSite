@@ -1,0 +1,20 @@
+docs/superpowers/specs/2026-07-27-github-repo-browser-design.md
+  s_05a36802ec29e2::t_eca89716c33892 84
+  s_05a36802ec29e2::t_1407ea0da36fb9 71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "3ac11ee9433ca01978b5eada10ce3c32aba9e438",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
