@@ -1,0 +1,23 @@
+server/services/repoStore.js
+  s_05a36802ec29e2::t_165643b61fbb9d 1-87
+test/repoStore.test.js
+  s_05a36802ec29e2::t_31b989f7d3cd88 1-50
+test/helpers.js
+  s_05a36802ec29e2::t_fd9c4eeae1bde9 1-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "26a0783da5d88e8629fda1c05e4123df4b665789",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
