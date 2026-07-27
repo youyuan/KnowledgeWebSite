@@ -1,0 +1,21 @@
+server/services/git.js
+  s_05a36802ec29e2::t_0961176f5a57fb 1-38
+test/git.test.js
+  s_05a36802ec29e2::t_55a1cbb85beef7 1-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "76aed996ebe293fca63e666c20bf666fe790ce78",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
