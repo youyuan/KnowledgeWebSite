@@ -54,6 +54,7 @@ test('GET file 读取内容；404/400/415 行为', async () => {
   assert.equal((await request(app).get('/api/repos/lib1/file').query({ path: 'no.md' })).status, 404);
   assert.equal((await request(app).get('/api/repos/lib1/file').query({ path: '../../../etc/passwd' })).status, 400);
   assert.equal((await request(app).get('/api/repos/lib1/file').query({ path: '.git/config' })).status, 400);
+  assert.equal((await request(app).get('/api/repos/lib1/file').query({ path: 'docs' })).status, 400);
   assert.equal((await request(app).get('/api/repos/no-such/file').query({ path: 'a.md' })).status, 404);
 });
 
@@ -90,6 +91,25 @@ test('POST upload 上传二进制内容', async () => {
     .send(payload);
   assert.equal(res.status, 201);
   assert.deepEqual(fs.readFileSync(dir('lib1', 'a', 'b', 'pic.bin')), payload);
+});
+
+test('.git 路径在所有文件接口被拒（400）', async () => {
+  assert.equal((await request(app).get('/api/repos/lib1/raw').query({ path: '.git/config' })).status, 400);
+  assert.equal((await request(app).put('/api/repos/lib1/file').query({ path: '.git/config' }).send({ content: 'x' })).status, 400);
+  assert.equal((await request(app).post('/api/repos/lib1/upload').query({ path: '.git/config' }).set('Content-Type', 'application/octet-stream').send('x')).status, 400);
+  assert.equal((await request(app).delete('/api/repos/lib1/file').query({ path: '.git/config' })).status, 400);
+});
+
+test('POST upload 无 body / JSON body → 400；父目录不存在 → 404', async () => {
+  const noBody = await request(app).post('/api/repos/lib1/upload').query({ path: 'empty.bin' });
+  assert.equal(noBody.status, 400);
+  const jsonBody = await request(app).post('/api/repos/lib1/upload').query({ path: 'x.bin' }).send({ a: 1 });
+  assert.equal(jsonBody.status, 400);
+  const noDir = await request(app).post('/api/repos/lib1/upload')
+    .query({ path: 'no-such-dir/x.bin' })
+    .set('Content-Type', 'application/octet-stream')
+    .send('x');
+  assert.equal(noDir.status, 404);
 });
 
 test('DELETE file 删除文件与文件夹；根目录 400', async () => {

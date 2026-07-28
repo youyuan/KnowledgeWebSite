@@ -44,6 +44,7 @@ router.get('/:id/file', (req, res, next) => {
     res.json({ path: req.query.path, content: buf.toString('utf8') });
   } catch (err) {
     if (err.code === 'ENOENT') err = new store.HttpError(404, '文件不存在');
+    if (err.code === 'EISDIR') err = new store.HttpError(400, '路径是目录');
     next(err);
   }
 });
@@ -114,9 +115,11 @@ router.delete('/:id/file', (req, res, next) => {
 router.post('/:id/upload', express.raw({ type: () => true, limit: '50mb' }), (req, res, next) => {
   try {
     store.getRepo(req.params.id);
+    if (!Buffer.isBuffer(req.body) || req.body.length === 0) throw new store.HttpError(400, '请求体必须为原始二进制');
     fs.writeFileSync(store.safeResolve(req.params.id, req.query.path), req.body);
     res.status(201).json({ ok: true });
   } catch (err) {
+    if (err.code === 'ENOENT') err = new store.HttpError(404, '父目录不存在');
     next(err);
   }
 });
