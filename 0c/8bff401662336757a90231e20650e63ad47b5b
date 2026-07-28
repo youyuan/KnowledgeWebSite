@@ -1,0 +1,21 @@
+docs/superpowers/specs/2026-07-28-local-directory-mode-design.md
+  s_05a36802ec29e2::t_ab9e3a872f5263 41-42
+  s_05a36802ec29e2::t_b0913fd111c196 55
+  s_05a36802ec29e2::t_772bcc6d15c419 1-40,43-54,56-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "0c8bff401662336757a90231e20650e63ad47b5b",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
