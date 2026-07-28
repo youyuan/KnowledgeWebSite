@@ -32,7 +32,7 @@ textarea.editor { flex: 1; width: 100%; font-family: ui-monospace, monospace; fo
 button { cursor: pointer; }
 .placeholder { color: #999; }
 h2 button { float: right; }
-#tree-toolbar { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+#tree-toolbar:not([hidden]) { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
 #tree-toolbar button { font-size: 12px; padding: 3px 8px; }
 #tree summary { cursor: pointer; }
 #tree summary:hover, #tree a.file:hover { text-decoration: underline; }
