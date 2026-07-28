@@ -57,11 +57,14 @@ async function selectRepo(id) {
 
 async function refreshTree() {
   const tree = await api(`/api/repos/${state.current}/tree`);
-  renderTree(tree, $('#tree'));
+  const nav = $('#tree');
+  nav.innerHTML = '';
+  renderTree(tree, nav);
 }
 
 function renderTree(node, container) {
-  container.innerHTML = '';
+  // 注意：不要在这里清空 container——递归调用会传入 details 元素，
+  // 清空会抹掉刚 append 的 summary，导致浏览器显示默认文本"详细信息"
   const ul = document.createElement('ul');
   for (const child of node.children || []) {
     const li = document.createElement('li');
