@@ -120,10 +120,17 @@ function toolbar(relPath, buttons) {
   return bar;
 }
 
+function rawUrl(relPath) {
+  return `/api/repos/${state.current}/raw?path=${encodeURIComponent(relPath)}`;
+}
+
 function renderMarkdown(content, relPath) {
   const main = $('#main');
   main.innerHTML = '';
-  main.append(toolbar(relPath, [button('编辑', () => renderEditor(content, relPath))]));
+  main.append(toolbar(relPath, [
+    button('编辑', () => renderEditor(content, relPath)),
+    button('新标签页打开', () => window.open(`/view.html?id=${encodeURIComponent(state.current)}&path=${encodeURIComponent(relPath)}`, '_blank')),
+  ]));
   const article = document.createElement('article');
   article.className = 'markdown-body';
   article.innerHTML = DOMPurify.sanitize(marked.parse(content));
@@ -134,10 +141,13 @@ function renderMarkdown(content, relPath) {
 function renderHtmlPreview(relPath) {
   const main = $('#main');
   main.innerHTML = '';
-  main.append(toolbar(relPath, [button('源码', () => openHtmlSource(relPath))]));
+  main.append(toolbar(relPath, [
+    button('源码', () => openHtmlSource(relPath)),
+    button('新标签页打开', () => window.open(rawUrl(relPath), '_blank')),
+  ]));
   const iframe = document.createElement('iframe');
-  iframe.setAttribute('sandbox', 'allow-same-origin');
-  iframe.src = `/api/repos/${state.current}/raw?path=${encodeURIComponent(relPath)}`;
+  iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts');
+  iframe.src = rawUrl(relPath);
   main.append(iframe);
 }
 

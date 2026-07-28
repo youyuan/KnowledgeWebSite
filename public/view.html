@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>查看 - 知识库浏览器</title>
+  <link rel="stylesheet" href="/vendor/highlight/styles/github.min.css">
+  <style>
+    body { margin: 0; padding: 24px 32px 64px; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .path { color: #666; font-size: 13px; word-break: break-all; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 16px; }
+    .markdown-body { max-width: 860px; }
+    .markdown-body pre { background: #f6f8fa; padding: 12px; overflow-x: auto; }
+    .markdown-body img { max-width: 100%; }
+    .error { color: #b23a48; }
+  </style>
+</head>
+<body>
+  <div class="path" id="path-label"></div>
+  <article class="markdown-body" id="content">加载中…</article>
+  <script src="/vendor/marked/marked.umd.js"></script>
+  <script src="/vendor/highlight/highlight.min.js"></script>
+  <script src="/vendor/dompurify/purify.min.js"></script>
+  <script>
+    /* global marked, hljs, DOMPurify */
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    const path = params.get('path');
+    const label = document.getElementById('path-label');
+    const content = document.getElementById('content');
+    label.textContent = `${id} / ${path}`;
+    document.title = `${path} - 知识库浏览器`;
+
+    fetch(`/api/repos/${encodeURIComponent(id)}/file?path=${encodeURIComponent(path)}`)
+      .then(async res => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `加载失败 (${res.status})`);
+        return data.content;
+      })
+      .then(md => {
+        content.innerHTML = DOMPurify.sanitize(marked.parse(md));
+        content.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+      })
+      .catch(err => {
+        content.innerHTML = '';
+        content.className = 'error';
+        content.textContent = err.message;
+      });
+  </script>
+</body>
+</html>
