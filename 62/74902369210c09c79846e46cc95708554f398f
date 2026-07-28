@@ -1,0 +1,26 @@
+server/routes/files.js
+  s_05a36802ec29e2::t_9c71a7181d1bcb 1-70
+server/index.js
+  s_05a36802ec29e2::t_9766132492d438 11
+server/routes/repos.js
+  s_05a36802ec29e2::t_c38f74483e5887 38-39,41,43-46
+  s_05a36802ec29e2::t_aa8c474ec16166 40,42,49
+test/api.test.js
+  s_05a36802ec29e2::t_f6c09a3ad7a46e 130-179
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "6274902369210c09c79846e46cc95708554f398f",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
