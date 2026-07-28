@@ -1,0 +1,21 @@
+server/services/contentStore.js
+  s_05a36802ec29e2::t_9c886ca66d9d67 24
+test/contentStore.test.js
+  s_05a36802ec29e2::t_c544e99f59dcdb 31-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "7f78f7924525e4eee1d02f58cb1e4fc91ed543c5",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
