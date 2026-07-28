@@ -28,6 +28,12 @@ test('createRepo 非法名 400', () => {
   assert.throws(() => store.createRepo('../evil'), err => err.status === 400);
 });
 
+test('纯点 id 被拒绝 400', () => {
+  assert.throws(() => store.repoDir('..'), err => err.status === 400);
+  assert.throws(() => store.repoDir('.'), err => err.status === 400);
+  assert.throws(() => store.createRepo('..'), err => err.status === 400);
+});
+
 test('getRepo 不存在 404', () => {
   assert.throws(() => store.getRepo('no-such'), err => err.status === 404);
 });

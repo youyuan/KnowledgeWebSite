@@ -21,7 +21,7 @@ function listRepos() {
 }
 
 function repoDir(id) {
-  if (!ID_RE.test(id)) throw new HttpError(400, `非法资料库 id: ${id}`);
+  if (id === '.' || id === '..' || !ID_RE.test(id)) throw new HttpError(400, `非法资料库 id: ${id}`);
   return path.join(CONTENT_DIR, id);
 }
 
