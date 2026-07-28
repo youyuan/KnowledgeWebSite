@@ -1,0 +1,54 @@
+server/routes/search.js
+  s_05a36802ec29e2::t_618d3ed2fadd50 9
+package.json
+  s_05a36802ec29e2::t_571f68bfb56c49 28
+server/index.js
+  s_05a36802ec29e2::t_8030a7d76d57bf 17
+server/services/repoStore.js
+  s_05a36802ec29e2::t_fcf011765d7937 73-77
+public/index.html
+  s_05a36802ec29e2::t_5cc56de9024c93 29
+public/app.js
+  s_05a36802ec29e2::t_4aef5b3bd74959 1
+  s_05a36802ec29e2::t_56f31e5059b34f 127
+  s_05a36802ec29e2::t_da9f3547763455 153-154,156-158
+test/git.test.js
+  s_05a36802ec29e2::t_1db440262029da 42-70
+test/repoStore.test.js
+  s_05a36802ec29e2::t_0a4aa2c460aead 39-48
+README.md
+  s_05a36802ec29e2::t_021ce5d9150d43 5-6
+  s_05a36802ec29e2::t_aa7c816905e0e7 29-32
+test/api.test.js
+  s_05a36802ec29e2::t_6299298c8fd85e 231-235
+  s_05a36802ec29e2::t_ef9ac48f866494 173-189
+  s_05a36802ec29e2::t_27908a9f455b0a 4
+  s_05a36802ec29e2::t_911c72cc516c53 62-74
+test/dompurify.test.js
+  s_05a36802ec29e2::t_06bcee275dd086 1-35
+server/routes/repos.js
+  s_05a36802ec29e2::t_91012f8e9e2bb2 43,45-48,51-52
+  s_05a36802ec29e2::t_4eb71f969d1392 86
+server/services/git.js
+  s_05a36802ec29e2::t_b4870e17f0a008 23-32,37-40
+  s_05a36802ec29e2::t_0867dcc1a178ab 53
+  s_05a36802ec29e2::t_a4fe6d9ffd2f16 41
+package-lock.json
+  s_05a36802ec29e2::t_36dcc78c21c238 13,50-55,256-263
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "1e5ede13ab5db208ae573445d53b4013c4e88a87",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
