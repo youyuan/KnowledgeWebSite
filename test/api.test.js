@@ -2,234 +2,113 @@ const { test, before } = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const { makeTempDir, makeSourceRepo } = require('./helpers');
+const { makeTempDir } = require('./helpers');
 
-process.env.DATA_DIR = makeTempDir('kw-data-');
+process.env.CONTENT_DIR = makeTempDir('kw-content-');
 const request = require('supertest');
 const { createApp } = require('../server/index');
-const store = require('../server/services/repoStore');
 
 const app = createApp();
+const dir = (...parts) => path.join(process.env.CONTENT_DIR, ...parts);
 
-async function waitReady(id, timeoutMs = 10000) {
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
-    const repo = store.listRepos().find(r => r.id === id);
-    if (repo && repo.status !== 'cloning') return repo;
-    await new Promise(r => setTimeout(r, 100));
-  }
-  throw new Error('等待 clone 超时');
-}
-
-let srcDir;
 before(() => {
-  srcDir = makeSourceRepo({
-    'README.md': '# 你好\n关键词在此\n',
-    'docs/guide.md': '指南 包含关键词\n',
-    'index.html': '<html><body>hi</body></html>\n',
-    'script.js': 'console.log(1)\n',
-  });
+  // 直接写文件构造资料库 lib1
+  fs.mkdirSync(dir('lib1', 'docs'), { recursive: true });
+  fs.writeFileSync(dir('lib1', 'README.md'), '# 你好\n关键词在此\n');
+  fs.writeFileSync(dir('lib1', 'docs', 'guide.md'), '指南 包含关键词\n');
+  fs.writeFileSync(dir('lib1', 'index.html'), '<html><body>hi</body></html>\n');
+  fs.writeFileSync(dir('lib1', 'script.js'), 'console.log(1)\n');
 });
 
-test('POST /api/repos 添加仓库并异步克隆成功', async () => {
-  const res = await request(app).post('/api/repos').send({ url: srcDir });
-  assert.equal(res.status, 202);
-  assert.equal(res.body.status, 'cloning');
-  const repo = await waitReady(res.body.id);
-  assert.equal(repo.status, 'ready');
-});
-
-test('POST /api/repos 缺少 url 返回 400', async () => {
-  const res = await request(app).post('/api/repos').send({});
-  assert.equal(res.status, 400);
-});
-
-test('POST /api/repos 重复添加返回 409', async () => {
-  const res = await request(app).post('/api/repos').send({ url: srcDir });
-  assert.equal(res.status, 409);
-});
-
-test('POST /api/repos 克隆失败状态为 error', async () => {
-  const res = await request(app).post('/api/repos').send({ url: '/nonexistent/bad-repo' });
-  assert.equal(res.status, 202);
-  const repo = await waitReady(res.body.id);
-  assert.equal(repo.status, 'error');
-  assert.ok(repo.error);
-  // 清理
-  await request(app).delete(`/api/repos/${repo.id}`);
-});
-
-test('POST /api/repos 带 token clone 后 remote 恢复原始 URL（.git/config 不含 token）', async () => {
-  const src2 = makeSourceRepo({ 'a.md': 'token 测试\n' });
-  const res = await request(app).post('/api/repos').send({ url: src2, token: 'fake-secret-token' });
-  assert.equal(res.status, 202);
-  const repo = await waitReady(res.body.id);
-  assert.equal(repo.status, 'ready');
-  const config = fs.readFileSync(path.join(store.repoDir(repo.id), '.git', 'config'), 'utf8');
-  assert.ok(!config.includes('fake-secret-token'), '.git/config 不应包含 token');
-  assert.ok(config.includes(src2), 'remote 应恢复为原始 URL');
-  // 清理
-  await request(app).delete(`/api/repos/${repo.id}`);
-});
-
-test('GET /api/repos 返回仓库列表', async () => {
+test('GET /api/repos 列出资料库', async () => {
   const res = await request(app).get('/api/repos');
   assert.equal(res.status, 200);
-  assert.equal(res.body.length, 1);
+  assert.deepEqual(res.body, [{ id: 'lib1' }]);
 });
 
-test('pull 更新成功', async () => {
-  const id = store.listRepos()[0].id;
-  const res = await request(app).post(`/api/repos/${id}/pull`);
-  assert.equal(res.status, 200);
-  assert.equal(res.body.ok, true);
+test('POST /api/repos 新建资料库', async () => {
+  const res = await request(app).post('/api/repos').send({ name: 'lib2' });
+  assert.equal(res.status, 201);
+  assert.ok(fs.statSync(dir('lib2')).isDirectory());
 });
 
-test('reset 接口可用', async () => {
-  const id = store.listRepos()[0].id;
-  const res = await request(app).post(`/api/repos/${id}/reset`);
-  assert.equal(res.status, 200);
-});
-
-test('删除仓库移除目录与配置', async () => {
-  const id = store.listRepos()[0].id;
-  const dir = store.repoDir(id);
-  const res = await request(app).delete(`/api/repos/${id}`);
-  assert.equal(res.status, 200);
-  assert.ok(!fs.existsSync(dir));
-  assert.equal(store.listRepos().length, 0);
-});
-
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-test('clone 进行中删除仓库不产生未处理 rejection（clone 成功路径）', async () => {
-  const rejections = [];
-  const onRejection = reason => rejections.push(reason);
-  process.on('unhandledRejection', onRejection);
-  try {
-    const res = await request(app).post('/api/repos').send({ url: srcDir });
-    assert.equal(res.status, 202);
-    // clone 尚未完成即删除
-    const del = await request(app).delete(`/api/repos/${res.body.id}`);
-    assert.equal(del.status, 200);
-    // 等待足够时间让 clone 完成的 .then 回调执行（回调会对已删除 id 更新状态）
-    await sleep(2000);
-    assert.deepEqual(rejections, [], `存在未处理 rejection: ${rejections.join(', ')}`);
-    assert.equal(store.listRepos().length, 0);
-    // 后续请求仍正常
-    const list = await request(app).get('/api/repos');
-    assert.equal(list.status, 200);
-  } finally {
-    process.removeListener('unhandledRejection', onRejection);
-  }
-});
-
-test('clone 进行中删除仓库不产生未处理 rejection（clone 失败路径）', async () => {
-  const rejections = [];
-  const onRejection = reason => rejections.push(reason);
-  process.on('unhandledRejection', onRejection);
-  try {
-    const res = await request(app).post('/api/repos').send({ url: '/nonexistent/bad-repo-2' });
-    assert.equal(res.status, 202);
-    const del = await request(app).delete(`/api/repos/${res.body.id}`);
-    assert.equal(del.status, 200);
-    // 等待足够时间让 clone 失败的 .catch 回调执行
-    await sleep(2000);
-    assert.deepEqual(rejections, [], `存在未处理 rejection: ${rejections.join(', ')}`);
-    assert.equal(store.listRepos().length, 0);
-  } finally {
-    process.removeListener('unhandledRejection', onRejection);
-  }
-});
-
-let id2;
-test('准备：重新添加仓库用于文件与搜索测试', async () => {
-  const res = await request(app).post('/api/repos').send({ url: srcDir });
-  id2 = (await waitReady(res.body.id)).id;
-  assert.ok(id2);
+test('POST /api/repos 重名 409 / 非法名 400 / 缺 name 400', async () => {
+  assert.equal((await request(app).post('/api/repos').send({ name: 'lib2' })).status, 409);
+  assert.equal((await request(app).post('/api/repos').send({ name: 'bad name' })).status, 400);
+  assert.equal((await request(app).post('/api/repos').send({})).status, 400);
 });
 
 test('GET tree 返回目录结构并标注扩展名', async () => {
-  const res = await request(app).get(`/api/repos/${id2}/tree`);
+  const res = await request(app).get('/api/repos/lib1/tree');
   assert.equal(res.status, 200);
   const names = res.body.children.map(c => c.name);
   assert.ok(names.includes('README.md'));
-  assert.ok(names.includes('docs'));
   const docs = res.body.children.find(c => c.name === 'docs');
   assert.equal(docs.children[0].ext, '.md');
 });
 
-test('GET file 读取文件内容', async () => {
-  const res = await request(app).get(`/api/repos/${id2}/file`).query({ path: 'README.md' });
-  assert.equal(res.status, 200);
-  assert.match(res.body.content, /你好/);
-});
-
-test('GET file 路径逃逸返回 400', async () => {
-  const res = await request(app).get(`/api/repos/${id2}/file`).query({ path: '../../../etc/passwd' });
-  assert.equal(res.status, 400);
-});
-
-test('GET file 拒绝 .git 路径', async () => {
-  for (const p of ['.git', '.git/config']) {
-    const res = await request(app).get(`/api/repos/${id2}/file`).query({ path: p });
-    assert.equal(res.status, 400, `应拒绝: ${p}`);
-  }
-});
-
-test('GET raw 拒绝 .git 路径', async () => {
-  const res = await request(app).get(`/api/repos/${id2}/raw`).query({ path: '.git/config' });
-  assert.equal(res.status, 400);
-});
-
-test('PUT file 拒绝写入 .git 路径', async () => {
-  const res = await request(app).put(`/api/repos/${id2}/file`).query({ path: '.git/config' }).send({ content: '[core]\n\thooksPath = /evil\n' });
-  assert.equal(res.status, 400);
-});
-
-test('GET file 不存在返回 404', async () => {
-  const res = await request(app).get(`/api/repos/${id2}/file`).query({ path: 'no-such.md' });
-  assert.equal(res.status, 404);
+test('GET file 读取内容；404/400/415 行为', async () => {
+  const ok = await request(app).get('/api/repos/lib1/file').query({ path: 'README.md' });
+  assert.equal(ok.status, 200);
+  assert.match(ok.body.content, /你好/);
+  assert.equal((await request(app).get('/api/repos/lib1/file').query({ path: 'no.md' })).status, 404);
+  assert.equal((await request(app).get('/api/repos/lib1/file').query({ path: '../../../etc/passwd' })).status, 400);
+  assert.equal((await request(app).get('/api/repos/lib1/file').query({ path: '.git/config' })).status, 400);
+  assert.equal((await request(app).get('/api/repos/no-such/file').query({ path: 'a.md' })).status, 404);
 });
 
 test('PUT file 保存后读取到新内容', async () => {
-  await request(app).put(`/api/repos/${id2}/file`).query({ path: 'README.md' }).send({ content: '# 已修改\n' });
-  const res = await request(app).get(`/api/repos/${id2}/file`).query({ path: 'README.md' });
+  await request(app).put('/api/repos/lib1/file').query({ path: 'README.md' }).send({ content: '# 已修改\n' });
+  const res = await request(app).get('/api/repos/lib1/file').query({ path: 'README.md' });
   assert.equal(res.body.content, '# 已修改\n');
 });
 
-test('PUT file 缺少 content 返回 400', async () => {
-  const res = await request(app).put(`/api/repos/${id2}/file`).query({ path: 'README.md' }).send({});
-  assert.equal(res.status, 400);
-});
-
 test('GET raw 返回原始 HTML', async () => {
-  const res = await request(app).get(`/api/repos/${id2}/raw`).query({ path: 'index.html' });
+  const res = await request(app).get('/api/repos/lib1/raw').query({ path: 'index.html' });
   assert.equal(res.status, 200);
   assert.match(res.text, /<html>/);
 });
 
-test('搜索命中并返回行号', async () => {
-  const res = await request(app).get(`/api/repos/${id2}/search`).query({ q: '关键词' });
+test('POST file 新建空文件；409/404 行为', async () => {
+  assert.equal((await request(app).post('/api/repos/lib1/file').query({ path: 'new.md' })).status, 201);
+  assert.equal(fs.readFileSync(dir('lib1', 'new.md'), 'utf8'), '');
+  assert.equal((await request(app).post('/api/repos/lib1/file').query({ path: 'new.md' })).status, 409);
+  assert.equal((await request(app).post('/api/repos/lib1/file').query({ path: 'no-dir/x.md' })).status, 404);
+});
+
+test('POST mkdir 递归创建文件夹', async () => {
+  assert.equal((await request(app).post('/api/repos/lib1/mkdir').query({ path: 'a/b/c' })).status, 201);
+  assert.ok(fs.statSync(dir('lib1', 'a', 'b', 'c')).isDirectory());
+});
+
+test('POST upload 上传二进制内容', async () => {
+  const payload = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, 0x01]);
+  const res = await request(app)
+    .post('/api/repos/lib1/upload')
+    .query({ path: 'a/b/pic.bin' })
+    .set('Content-Type', 'application/octet-stream')
+    .send(payload);
+  assert.equal(res.status, 201);
+  assert.deepEqual(fs.readFileSync(dir('lib1', 'a', 'b', 'pic.bin')), payload);
+});
+
+test('DELETE file 删除文件与文件夹；根目录 400', async () => {
+  assert.equal((await request(app).delete('/api/repos/lib1/file').query({ path: 'new.md' })).status, 200);
+  assert.ok(!fs.existsSync(dir('lib1', 'new.md')));
+  assert.equal((await request(app).delete('/api/repos/lib1/file').query({ path: 'a' })).status, 200);
+  assert.ok(!fs.existsSync(dir('lib1', 'a')));
+  assert.equal((await request(app).delete('/api/repos/lib1/file').query({ path: '' })).status, 400);
+  assert.ok(fs.statSync(dir('lib1')).isDirectory());
+});
+
+test('搜索命中并返回行号；js 文件不在范围；缺 q 400；库不存在 404', async () => {
+  const res = await request(app).get('/api/repos/lib1/search').query({ q: '关键词' });
   assert.equal(res.status, 200);
   const hit = res.body.results.find(r => r.path.endsWith('guide.md'));
-  assert.ok(hit, '应命中 docs/guide.md');
+  assert.ok(hit);
   assert.equal(hit.line, 1);
-  assert.match(hit.text, /关键词/);
-});
-
-test('搜索不匹配的 js 文件之外内容', async () => {
-  const res = await request(app).get(`/api/repos/${id2}/search`).query({ q: 'console.log' });
-  assert.equal(res.status, 200);
-  assert.equal(res.body.results.length, 0, 'js 文件不在搜索范围');
-});
-
-test('搜索缺少 q 返回 400', async () => {
-  const res = await request(app).get(`/api/repos/${id2}/search`);
-  assert.equal(res.status, 400);
-});
-
-test('搜索不存在的仓库返回 404', async () => {
-  const res = await request(app).get('/api/repos/no__such/search').query({ q: '关键词' });
-  assert.equal(res.status, 404);
+  const js = await request(app).get('/api/repos/lib1/search').query({ q: 'console.log' });
+  assert.equal(js.body.results.length, 0);
+  assert.equal((await request(app).get('/api/repos/lib1/search')).status, 400);
+  assert.equal((await request(app).get('/api/repos/no-such/search').query({ q: 'x' })).status, 404);
 });

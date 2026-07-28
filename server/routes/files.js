@@ -1,7 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const store = require('../services/repoStore');
+const store = require('../services/contentStore');
 
 const router = express.Router();
 
@@ -37,6 +37,7 @@ router.get('/:id/tree', (req, res, next) => {
 
 router.get('/:id/file', (req, res, next) => {
   try {
+    store.getRepo(req.params.id);
     const full = store.safeResolve(req.params.id, req.query.path);
     const buf = fs.readFileSync(full);
     if (isBinary(buf)) throw new store.HttpError(415, '二进制文件不支持查看');
@@ -49,6 +50,7 @@ router.get('/:id/file', (req, res, next) => {
 
 router.put('/:id/file', (req, res, next) => {
   try {
+    store.getRepo(req.params.id);
     const full = store.safeResolve(req.params.id, req.query.path);
     if (typeof (req.body || {}).content !== 'string') throw new store.HttpError(400, '缺少 content');
     fs.writeFileSync(full, req.body.content, 'utf8');
@@ -60,8 +62,60 @@ router.put('/:id/file', (req, res, next) => {
 
 router.get('/:id/raw', (req, res, next) => {
   try {
+    store.getRepo(req.params.id);
     const full = store.safeResolve(req.params.id, req.query.path);
     res.sendFile(full);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 新建空文件
+router.post('/:id/file', (req, res, next) => {
+  try {
+    store.getRepo(req.params.id);
+    const full = store.safeResolve(req.params.id, req.query.path);
+    if (fs.existsSync(full)) throw new store.HttpError(409, '文件已存在');
+    fs.writeFileSync(full, '', 'utf8');
+    res.status(201).json({ ok: true });
+  } catch (err) {
+    if (err.code === 'ENOENT') err = new store.HttpError(404, '父目录不存在');
+    next(err);
+  }
+});
+
+// 新建文件夹（递归）
+router.post('/:id/mkdir', (req, res, next) => {
+  try {
+    store.getRepo(req.params.id);
+    fs.mkdirSync(store.safeResolve(req.params.id, req.query.path), { recursive: true });
+    res.status(201).json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 删除文件或文件夹（不允许删资料库根目录）
+router.delete('/:id/file', (req, res, next) => {
+  try {
+    store.getRepo(req.params.id);
+    const full = store.safeResolve(req.params.id, req.query.path);
+    if (full === store.repoDir(req.params.id)) {
+      throw new store.HttpError(400, '不允许删除资料库根目录');
+    }
+    fs.rmSync(full, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 上传文件（原始二进制 body）
+router.post('/:id/upload', express.raw({ type: () => true, limit: '50mb' }), (req, res, next) => {
+  try {
+    store.getRepo(req.params.id);
+    fs.writeFileSync(store.safeResolve(req.params.id, req.query.path), req.body);
+    res.status(201).json({ ok: true });
   } catch (err) {
     next(err);
   }

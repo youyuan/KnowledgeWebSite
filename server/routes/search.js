@@ -1,5 +1,5 @@
 const express = require('express');
-const store = require('../services/repoStore');
+const store = require('../services/contentStore');
 const { search } = require('../services/search');
 
 const router = express.Router();
