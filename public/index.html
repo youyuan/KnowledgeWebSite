@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>知识库浏览器</title>
+  <link rel="stylesheet" href="/vendor/highlight/styles/github.min.css">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <h1>知识库浏览器</h1>
+    <input id="search-input" type="search" placeholder="在当前仓库搜索…" disabled>
+  </header>
+  <aside>
+    <section>
+      <h2>仓库</h2>
+      <form id="add-form">
+        <input id="repo-url" placeholder="https://github.com/owner/repo" required>
+        <input id="repo-token" placeholder="token（私有仓库可选）">
+        <button type="submit">添加</button>
+      </form>
+      <ul id="repo-list"></ul>
+    </section>
+    <nav id="tree"></nav>
+  </aside>
+  <main id="main"><p class="placeholder">选择左侧文件开始浏览</p></main>
+  <script src="/vendor/marked/marked.umd.js"></script>
+  <script src="/vendor/highlight/highlight.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
