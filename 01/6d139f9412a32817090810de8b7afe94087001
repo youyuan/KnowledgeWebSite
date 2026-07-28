@@ -1,0 +1,21 @@
+public/view.html
+  s_05a36802ec29e2::t_da214cab8fb9ee 1-50
+public/app.js
+  s_05a36802ec29e2::t_34e31ab4de828d 123-126,130-133,144-147,149-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "016d139f9412a32817090810de8b7afe94087001",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
