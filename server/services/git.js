@@ -20,8 +20,23 @@ function urlWithToken(url, token) {
   return url;
 }
 
+// clone 用的 URL 可能嵌入 token，任何对外暴露的文本（如 git stderr）都需先脱敏
+function redactToken(text, token) {
+  if (typeof text !== 'string' || !token) return text;
+  let out = text;
+  for (const v of [encodeURIComponent(token), token]) {
+    if (v) out = out.split(v).join('***');
+  }
+  return out;
+}
+
 async function clone(url, token, dest) {
   await run(['clone', urlWithToken(url, token), dest]);
+}
+
+// clone 成功后恢复为无 token 的原始 URL，避免明文 token 持久化在 .git/config
+async function setRemoteUrl(dir, url) {
+  await run(['remote', 'set-url', 'origin', url], { cwd: dir });
 }
 
 async function pull(dir) {
@@ -35,4 +50,4 @@ async function resetHard(dir) {
   await run(['reset', '--hard', `origin/${branch}`], { cwd: dir });
 }
 
-module.exports = { clone, pull, resetHard };
+module.exports = { clone, pull, resetHard, setRemoteUrl, urlWithToken, redactToken };

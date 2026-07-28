@@ -14,6 +14,7 @@ function createApp() {
   app.use(express.static(path.join(__dirname, '..', 'public')));
   app.use('/vendor/marked', express.static(path.join(__dirname, '..', 'node_modules', 'marked', 'lib')));
   app.use('/vendor/highlight', express.static(path.join(__dirname, '..', 'node_modules', '@highlightjs', 'cdn-assets')));
+  app.use('/vendor/dompurify', express.static(path.join(__dirname, '..', 'node_modules', 'dompurify', 'dist')));
 
   // 统一错误处理：err.status 缺省 500
   // eslint-disable-next-line no-unused-vars

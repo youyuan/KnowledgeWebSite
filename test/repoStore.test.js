@@ -36,6 +36,16 @@ test('safeResolve 拒绝路径逃逸', () => {
   );
 });
 
+test('safeResolve 统一拒绝 .git 路径', () => {
+  for (const p of ['.git', '.git/config', 'docs/../.git/config', '.git/hooks/pre-pull']) {
+    assert.throws(
+      () => store.safeResolve('octo__hello', p),
+      err => err.status === 400,
+      `应拒绝: ${p}`
+    );
+  }
+});
+
 test('safeResolve 允许仓库内路径', () => {
   const p = store.safeResolve('octo__hello', 'docs/a.md');
   assert.ok(p.includes('octo__hello'));

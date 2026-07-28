@@ -40,12 +40,16 @@ router.post('/', (req, res, next) => {
         // git 子进程可能在父进程退出后仍短暂写盘，rm 需重试（ENOTEMPTY）
         if (!store.listRepos().some(r => r.id === id)) {
           fs.rm(store.repoDir(id), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }, () => {});
-          return;
+          return Promise.resolve();
         }
-        setStatus(id, { status: 'ready', error: null });
+        // clone URL 曾嵌入 token，恢复原始 remote，避免明文 token 留在 .git/config；
+        // 私有仓库后续 pull 依赖用户自行配置 git credential helper
+        return git.setRemoteUrl(store.repoDir(id), url)
+          .then(() => setStatus(id, { status: 'ready', error: null }));
       })
       .catch(err => {
-        setStatus(id, { status: 'error', error: err.stderr || err.message });
+        // stderr 可能包含带 token 的 clone URL，入库前脱敏
+        setStatus(id, { status: 'error', error: git.redactToken(err.stderr || err.message, token) });
         fs.rm(store.repoDir(id), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }, () => {});
       });
     res.status(202).json(repo);
@@ -79,7 +83,7 @@ router.delete('/:id', (req, res, next) => {
   try {
     const repo = store.getRepo(req.params.id);
     store.removeRepo(repo.id);
-    fs.rmSync(store.repoDir(repo.id), { recursive: true, force: true });
+    fs.rmSync(store.repoDir(repo.id), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     res.json({ ok: true });
   } catch (err) {
     next(err);

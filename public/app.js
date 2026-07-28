@@ -1,4 +1,4 @@
-/* global marked, hljs */
+/* global marked, hljs, DOMPurify */
 const state = { repos: [], current: null, currentPath: null };
 
 const $ = sel => document.querySelector(sel);
@@ -124,7 +124,7 @@ function renderMarkdown(content, relPath) {
   main.append(toolbar(relPath, [button('编辑', () => renderEditor(content, relPath))]));
   const article = document.createElement('article');
   article.className = 'markdown-body';
-  article.innerHTML = marked.parse(content);
+  article.innerHTML = DOMPurify.sanitize(marked.parse(content));
   article.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
   main.append(article);
 }
@@ -150,11 +150,12 @@ function renderEditor(content, relPath) {
   const ta = document.createElement('textarea');
   ta.className = 'editor';
   ta.value = content;
-  const saveBtn = button('保存', async () => {
-    await api(`/api/repos/${state.current}/file?path=${encodeURIComponent(relPath)}`, {
+  const saveBtn = button('保存', () => {
+    api(`/api/repos/${state.current}/file?path=${encodeURIComponent(relPath)}`, {
       method: 'PUT', body: { content: ta.value },
-    });
-    openFile(relPath);
+    })
+      .then(() => openFile(relPath))
+      .catch(err => alert(err.message));
   });
   main.append(toolbar(relPath, [saveBtn, button('取消', () => openFile(relPath))]));
   main.append(ta);

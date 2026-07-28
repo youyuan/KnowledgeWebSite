@@ -25,6 +25,7 @@
   "private": true,
   "dependencies": {
     "@highlightjs/cdn-assets": "^11.11.1",
+    "dompurify": "^3.4.12",
     "express": "^5.2.1",
     "marked": "^18.0.7"
   },

@@ -1,6 +1,7 @@
 const { test, before } = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
+const path = require('path');
 const { makeTempDir, makeSourceRepo } = require('./helpers');
 
 process.env.DATA_DIR = makeTempDir('kw-data-');
@@ -54,6 +55,19 @@ test('POST /api/repos 克隆失败状态为 error', async () => {
   const repo = await waitReady(res.body.id);
   assert.equal(repo.status, 'error');
   assert.ok(repo.error);
+  // 清理
+  await request(app).delete(`/api/repos/${repo.id}`);
+});
+
+test('POST /api/repos 带 token clone 后 remote 恢复原始 URL（.git/config 不含 token）', async () => {
+  const src2 = makeSourceRepo({ 'a.md': 'token 测试\n' });
+  const res = await request(app).post('/api/repos').send({ url: src2, token: 'fake-secret-token' });
+  assert.equal(res.status, 202);
+  const repo = await waitReady(res.body.id);
+  assert.equal(repo.status, 'ready');
+  const config = fs.readFileSync(path.join(store.repoDir(repo.id), '.git', 'config'), 'utf8');
+  assert.ok(!config.includes('fake-secret-token'), '.git/config 不应包含 token');
+  assert.ok(config.includes(src2), 'remote 应恢复为原始 URL');
   // 清理
   await request(app).delete(`/api/repos/${repo.id}`);
 });
@@ -156,6 +170,23 @@ test('GET file 路径逃逸返回 400', async () => {
   assert.equal(res.status, 400);
 });
 
+test('GET file 拒绝 .git 路径', async () => {
+  for (const p of ['.git', '.git/config']) {
+    const res = await request(app).get(`/api/repos/${id2}/file`).query({ path: p });
+    assert.equal(res.status, 400, `应拒绝: ${p}`);
+  }
+});
+
+test('GET raw 拒绝 .git 路径', async () => {
+  const res = await request(app).get(`/api/repos/${id2}/raw`).query({ path: '.git/config' });
+  assert.equal(res.status, 400);
+});
+
+test('PUT file 拒绝写入 .git 路径', async () => {
+  const res = await request(app).put(`/api/repos/${id2}/file`).query({ path: '.git/config' }).send({ content: '[core]\n\thooksPath = /evil\n' });
+  assert.equal(res.status, 400);
+});
+
 test('GET file 不存在返回 404', async () => {
   const res = await request(app).get(`/api/repos/${id2}/file`).query({ path: 'no-such.md' });
   assert.equal(res.status, 404);
@@ -196,4 +227,9 @@ test('搜索不匹配的 js 文件之外内容', async () => {
 test('搜索缺少 q 返回 400', async () => {
   const res = await request(app).get(`/api/repos/${id2}/search`);
   assert.equal(res.status, 400);
+});
+
+test('搜索不存在的仓库返回 404', async () => {
+  const res = await request(app).get('/api/repos/no__such/search').query({ q: '关键词' });
+  assert.equal(res.status, 404);
 });

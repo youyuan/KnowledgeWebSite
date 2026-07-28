@@ -70,6 +70,11 @@ function safeResolve(id, relPath) {
   if (resolved !== base && !resolved.startsWith(base + path.sep)) {
     throw new HttpError(400, `非法路径: ${relPath}`);
   }
+  // .git 一律拒绝读写：读取会泄露 remote URL 等配置，写入可篡改 core.hooksPath 导致 pull 时 RCE
+  const rel = path.relative(base, resolved);
+  if (rel === '.git' || rel.startsWith('.git' + path.sep)) {
+    throw new HttpError(400, `非法路径: ${relPath}`);
+  }
   return resolved;
 }
 
