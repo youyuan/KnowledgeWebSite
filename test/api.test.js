@@ -127,3 +127,53 @@ test('clone 进行中删除仓库不产生未处理 rejection（clone 失败路�
     process.removeListener('unhandledRejection', onRejection);
   }
 });
+
+let id2;
+test('准备：重新添加仓库用于文件与搜索测试', async () => {
+  const res = await request(app).post('/api/repos').send({ url: srcDir });
+  id2 = (await waitReady(res.body.id)).id;
+  assert.ok(id2);
+});
+
+test('GET tree 返回目录结构并标注扩展名', async () => {
+  const res = await request(app).get(`/api/repos/${id2}/tree`);
+  assert.equal(res.status, 200);
+  const names = res.body.children.map(c => c.name);
+  assert.ok(names.includes('README.md'));
+  assert.ok(names.includes('docs'));
+  const docs = res.body.children.find(c => c.name === 'docs');
+  assert.equal(docs.children[0].ext, '.md');
+});
+
+test('GET file 读取文件内容', async () => {
+  const res = await request(app).get(`/api/repos/${id2}/file`).query({ path: 'README.md' });
+  assert.equal(res.status, 200);
+  assert.match(res.body.content, /你好/);
+});
+
+test('GET file 路径逃逸返回 400', async () => {
+  const res = await request(app).get(`/api/repos/${id2}/file`).query({ path: '../../../etc/passwd' });
+  assert.equal(res.status, 400);
+});
+
+test('GET file 不存在返回 404', async () => {
+  const res = await request(app).get(`/api/repos/${id2}/file`).query({ path: 'no-such.md' });
+  assert.equal(res.status, 404);
+});
+
+test('PUT file 保存后读取到新内容', async () => {
+  await request(app).put(`/api/repos/${id2}/file`).query({ path: 'README.md' }).send({ content: '# 已修改\n' });
+  const res = await request(app).get(`/api/repos/${id2}/file`).query({ path: 'README.md' });
+  assert.equal(res.body.content, '# 已修改\n');
+});
+
+test('PUT file 缺少 content 返回 400', async () => {
+  const res = await request(app).put(`/api/repos/${id2}/file`).query({ path: 'README.md' }).send({});
+  assert.equal(res.status, 400);
+});
+
+test('GET raw 返回原始 HTML', async () => {
+  const res = await request(app).get(`/api/repos/${id2}/raw`).query({ path: 'index.html' });
+  assert.equal(res.status, 200);
+  assert.match(res.text, /<html>/);
+});

@@ -8,6 +8,7 @@ function createApp() {
   app.get('/api/health', (req, res) => res.json({ ok: true }));
 
   app.use('/api/repos', require('./routes/repos'));
+  app.use('/api/repos', require('./routes/files'));
 
   app.use(express.static(path.join(__dirname, '..', 'public')));
   app.use('/vendor/marked', express.static(path.join(__dirname, '..', 'node_modules', 'marked', 'lib')));

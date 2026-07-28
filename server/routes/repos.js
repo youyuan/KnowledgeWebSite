@@ -35,10 +35,18 @@ router.post('/', (req, res, next) => {
     });
     // 异步 clone，完成后更新状态
     git.clone(url, token, store.repoDir(id))
-      .then(() => setStatus(id, { status: 'ready', error: null }))
+      .then(() => {
+        // clone 完成时仓库可能已被删除：清理残留目录，避免重新添加同 URL 时 clone 失败
+        // git 子进程可能在父进程退出后仍短暂写盘，rm 需重试（ENOTEMPTY）
+        if (!store.listRepos().some(r => r.id === id)) {
+          fs.rm(store.repoDir(id), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }, () => {});
+          return;
+        }
+        setStatus(id, { status: 'ready', error: null });
+      })
       .catch(err => {
         setStatus(id, { status: 'error', error: err.stderr || err.message });
-        fs.rm(store.repoDir(id), { recursive: true, force: true }, () => {});
+        fs.rm(store.repoDir(id), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }, () => {});
       });
     res.status(202).json(repo);
   } catch (err) {
