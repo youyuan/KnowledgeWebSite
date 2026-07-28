@@ -14,14 +14,16 @@
   </header>
   <aside>
     <section>
-      <h2>仓库</h2>
-      <form id="add-form">
-        <input id="repo-url" placeholder="https://github.com/owner/repo" required>
-        <input id="repo-token" placeholder="token（私有仓库可选）">
-        <button type="submit">添加</button>
-      </form>
+      <h2>资料库 <button id="btn-new-repo" title="新建资料库">＋</button></h2>
       <ul id="repo-list"></ul>
     </section>
+    <div id="tree-toolbar" hidden>
+      <button id="btn-new-file">新建文件</button>
+      <button id="btn-new-dir">新建文件夹</button>
+      <button id="btn-upload">上传</button>
+      <button id="btn-delete">删除</button>
+      <input id="upload-input" type="file" hidden>
+    </div>
     <nav id="tree"></nav>
   </aside>
   <main id="main"><p class="placeholder">选择左侧文件开始浏览</p></main>

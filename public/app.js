@@ -1,5 +1,6 @@
 /* global marked, hljs, DOMPurify */
-const state = { repos: [], current: null, currentPath: null };
+const state = { repos: [], current: null, selected: null };
+// selected: { path, type: 'file'|'dir' }，新建/上传/删除操作的目标；选中资料库时重置为根目录
 
 const $ = sel => document.querySelector(sel);
 
@@ -34,45 +35,29 @@ function renderRepos() {
     li.className = 'repo' + (state.current === repo.id ? ' active' : '');
     const label = document.createElement('span');
     label.textContent = repo.id;
-    if (repo.status === 'cloning') label.textContent += '（克隆中…）';
-    if (repo.status === 'error') label.textContent += '（失败）';
-    label.title = repo.error || repo.url;
-    label.onclick = () => repo.status === 'ready' && selectRepo(repo.id);
-    const pullBtn = button('更新', async () => {
-      try {
-        await api(`/api/repos/${repo.id}/pull`, { method: 'POST' });
-        await selectRepo(repo.id);
-      } catch (err) {
-        if (confirm(`更新失败：${err.message}\n\n是否强制重置为远端版本？（本地修改将丢失）`)) {
-          await api(`/api/repos/${repo.id}/reset`, { method: 'POST' });
-          await selectRepo(repo.id);
-        }
-      }
-    });
-    const delBtn = button('删除', async () => {
-      if (confirm(`删除仓库 ${repo.id}？本地目录将被移除。`)) {
-        await api(`/api/repos/${repo.id}`, { method: 'DELETE' });
-        if (state.current === repo.id) {
-          state.current = null;
-          $('#tree').innerHTML = '';
-          $('#search-input').disabled = true;
-        }
-        await loadRepos();
-      }
-    });
-    li.append(label, pullBtn, delBtn);
+    label.onclick = () => selectRepo(repo.id);
+    li.append(label);
     ul.append(li);
   }
 }
 
 async function selectRepo(id) {
   state.current = id;
-  state.currentPath = null;
+  state.selected = { path: '', type: 'dir' };
   $('#search-input').disabled = false;
+  $('#tree-toolbar').hidden = false;
   renderRepos();
-  const tree = await api(`/api/repos/${id}/tree`);
-  renderTree(tree, $('#tree'));
+  try {
+    await refreshTree();
+  } catch (err) {
+    alert(err.message);
+  }
   $('#main').innerHTML = '<p class="placeholder">选择左侧文件开始浏览</p>';
+}
+
+async function refreshTree() {
+  const tree = await api(`/api/repos/${state.current}/tree`);
+  renderTree(tree, $('#tree'));
 }
 
 function renderTree(node, container) {
@@ -84,6 +69,7 @@ function renderTree(node, container) {
       const details = document.createElement('details');
       const summary = document.createElement('summary');
       summary.textContent = child.name;
+      summary.onclick = () => { state.selected = { path: child.path, type: 'dir' }; };
       details.append(summary);
       renderTree(child, details);
       li.append(details);
@@ -92,8 +78,11 @@ function renderTree(node, container) {
       const a = document.createElement('a');
       a.textContent = child.name;
       a.className = supported ? 'file' : 'file unsupported';
-      if (supported) a.onclick = () => openFile(child.path);
-      else a.title = '不支持预览的文件类型';
+      a.onclick = () => {
+        state.selected = { path: child.path, type: 'file' };
+        if (supported) openFile(child.path);
+      };
+      if (!supported) a.title = '不支持预览，可选中后删除';
       li.append(a);
     }
     ul.append(li);
@@ -101,12 +90,22 @@ function renderTree(node, container) {
   container.append(ul);
 }
 
+// 新建/上传的目标目录：选中目录则用它，选中文件则用其父目录
+function targetDir() {
+  const sel = state.selected;
+  if (!sel || sel.type === 'dir') return (sel && sel.path) || '';
+  return sel.path.split('/').slice(0, -1).join('/');
+}
+
 async function openFile(relPath) {
-  state.currentPath = relPath;
   const ext = relPath.split('.').pop().toLowerCase();
-  if (ext === 'html' || ext === 'htm') return renderHtmlPreview(relPath);
-  const { content } = await api(`/api/repos/${state.current}/file?path=${encodeURIComponent(relPath)}`);
-  renderMarkdown(content, relPath);
+  try {
+    if (ext === 'html' || ext === 'htm') return renderHtmlPreview(relPath);
+    const { content } = await api(`/api/repos/${state.current}/file?path=${encodeURIComponent(relPath)}`);
+    renderMarkdown(content, relPath);
+  } catch (err) {
+    alert(err.message);
+  }
 }
 
 function toolbar(relPath, buttons) {
@@ -181,19 +180,75 @@ async function doSearch(q) {
   main.append(list);
 }
 
-$('#add-form').onsubmit = async e => {
-  e.preventDefault();
+// 资料库与文件管理
+$('#btn-new-repo').onclick = async () => {
+  const name = prompt('资料库名称（字母、数字、-、_、.）：');
+  if (!name || !name.trim()) return;
   try {
-    await api('/api/repos', {
-      method: 'POST',
-      body: {
-        url: $('#repo-url').value.trim(),
-        token: $('#repo-token').value.trim() || undefined,
-      },
-    });
-    $('#repo-url').value = '';
-    $('#repo-token').value = '';
+    await api('/api/repos', { method: 'POST', body: { name: name.trim() } });
     await loadRepos();
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+$('#btn-new-file').onclick = async () => {
+  const name = prompt('新建文件路径（相对当前目录）：');
+  if (!name || !name.trim()) return;
+  const rel = [targetDir(), name.trim()].filter(Boolean).join('/');
+  try {
+    await api(`/api/repos/${state.current}/file?path=${encodeURIComponent(rel)}`, { method: 'POST' });
+    await refreshTree();
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+$('#btn-new-dir').onclick = async () => {
+  const name = prompt('新建文件夹路径（相对当前目录）：');
+  if (!name || !name.trim()) return;
+  const rel = [targetDir(), name.trim()].filter(Boolean).join('/');
+  try {
+    await api(`/api/repos/${state.current}/mkdir?path=${encodeURIComponent(rel)}`, { method: 'POST' });
+    await refreshTree();
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+$('#btn-upload').onclick = () => $('#upload-input').click();
+
+$('#upload-input').onchange = async e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  const rel = [targetDir(), file.name].filter(Boolean).join('/');
+  try {
+    const res = await fetch(`/api/repos/${state.current}/upload?path=${encodeURIComponent(rel)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream' },
+      body: file,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `上传失败 (${res.status})`);
+    await refreshTree();
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+$('#btn-delete').onclick = async () => {
+  const sel = state.selected;
+  if (!sel || !sel.path) {
+    alert('请先在目录树中选择要删除的文件或文件夹');
+    return;
+  }
+  if (!confirm(`删除 ${sel.path}？此操作不可恢复。`)) return;
+  try {
+    await api(`/api/repos/${state.current}/file?path=${encodeURIComponent(sel.path)}`, { method: 'DELETE' });
+    state.selected = { path: '', type: 'dir' };
+    $('#main').innerHTML = '<p class="placeholder">选择左侧文件开始浏览</p>';
+    await refreshTree();
   } catch (err) {
     alert(err.message);
   }
@@ -208,6 +263,3 @@ $('#search-input').oninput = e => {
 };
 
 loadRepos();
-setInterval(() => {
-  if (state.repos.some(r => r.status === 'cloning')) loadRepos();
-}, 2000);
