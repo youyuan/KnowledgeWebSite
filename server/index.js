@@ -9,6 +9,7 @@ function createApp() {
 
   app.use('/api/repos', require('./routes/repos'));
   app.use('/api/repos', require('./routes/files'));
+  app.use('/api/repos', require('./routes/search'));
 
   app.use(express.static(path.join(__dirname, '..', 'public')));
   app.use('/vendor/marked', express.static(path.join(__dirname, '..', 'node_modules', 'marked', 'lib')));

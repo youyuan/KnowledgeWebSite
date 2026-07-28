@@ -177,3 +177,23 @@ test('GET raw 返回原始 HTML', async () => {
   assert.equal(res.status, 200);
   assert.match(res.text, /<html>/);
 });
+
+test('搜索命中并返回行号', async () => {
+  const res = await request(app).get(`/api/repos/${id2}/search`).query({ q: '关键词' });
+  assert.equal(res.status, 200);
+  const hit = res.body.results.find(r => r.path.endsWith('guide.md'));
+  assert.ok(hit, '应命中 docs/guide.md');
+  assert.equal(hit.line, 1);
+  assert.match(hit.text, /关键词/);
+});
+
+test('搜索不匹配的 js 文件之外内容', async () => {
+  const res = await request(app).get(`/api/repos/${id2}/search`).query({ q: 'console.log' });
+  assert.equal(res.status, 200);
+  assert.equal(res.body.results.length, 0, 'js 文件不在搜索范围');
+});
+
+test('搜索缺少 q 返回 400', async () => {
+  const res = await request(app).get(`/api/repos/${id2}/search`);
+  assert.equal(res.status, 400);
+});
