@@ -1,0 +1,23 @@
+public/app.js
+  s_05a36802ec29e2::t_49934fe50b8af6 2-3,38-39,46,48,50-54,58-62,72,81-85,93-99,102-108,183-186,188-227,229-230,232-251
+public/style.css
+  s_05a36802ec29e2::t_85000826b0ad69 34-38
+public/index.html
+  s_05a36802ec29e2::t_e31f9d0a528d28 17,20-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "0320d5d2c164a5811ef8d746b1fcd720480ea384",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
