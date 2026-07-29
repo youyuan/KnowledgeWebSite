@@ -1,0 +1,42 @@
+server/services/auth.js
+  s_c35b29c67263cf::t_7f868096381ddc 26
+  s_c35b29c67263cf::t_6dcd5085684908 4,10-12
+server/services/contentStore.js
+  s_c35b29c67263cf::t_3ffbe9a28b2dfe 60
+  s_c35b29c67263cf::t_3b643083a1176e 4-8
+  s_c35b29c67263cf::t_fbecc13e8e657b 29
+  s_c35b29c67263cf::t_61413d0d61933f 20-21
+test/api.test.js
+  s_c35b29c67263cf::t_93cb15f5e896a3 7-14,25
+test/dompurify.test.js
+  s_c35b29c67263cf::t_53d5dabcbae4f6 8-14
+test/auth.test.js
+  s_c35b29c67263cf::t_9c175e8161138d 7-15,28-33
+server/index.js
+  s_c35b29c67263cf::t_ee12a695d3aa87 35-41
+  s_c35b29c67263cf::t_41c790aaddf65b 6
+server/services/config.js
+  s_c35b29c67263cf::t_aa8dc4e6079b07 38
+.gitignore
+  s_c35b29c67263cf::t_1a975e2a8521a2 3
+test/health.test.js
+  s_c35b29c67263cf::t_3531bdb1fda4ee 7-13
+test/contentStore.test.js
+  s_c35b29c67263cf::t_c312b8a15adf91 7-13,16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "a2e8a06225b0e901a417397933284270c3e7b6f0",
+  "prompts": {},
+  "sessions": {
+    "s_c35b29c67263cf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54d41c17-8996-40fd-8a3f-1f67f33dd8de",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
