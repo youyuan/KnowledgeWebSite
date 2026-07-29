@@ -8,7 +8,7 @@
 npm install && npm start
 ```
 
-打开 http://localhost:3000 （端口可用 `PORT` 环境变量修改，内容目录可用 `CONTENT_DIR` 修改）。
+打开 http://localhost （默认 80 端口，可用 `PORT` 环境变量修改，内容目录可用 `CONTENT_DIR` 修改）。注意 80 为特权端口，Linux 下需要 root 或 `sudo setcap 'cap_net_bind_service=+ep' $(which node)` 授权。
 
 ## 前置要求
 

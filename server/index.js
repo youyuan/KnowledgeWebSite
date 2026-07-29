@@ -32,7 +32,7 @@ function createApp() {
 }
 
 if (require.main === module) {
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 80;
   require('./services/auth').loadUsers(); // 无有效用户配置时抛错拒绝启动
   createApp().listen(port, () => console.log(`知识库浏览器已启动: http://localhost:${port}`));
 }
