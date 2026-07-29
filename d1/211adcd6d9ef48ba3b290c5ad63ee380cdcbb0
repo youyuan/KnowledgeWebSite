@@ -1,0 +1,31 @@
+test/health.test.js
+  s_05a36802ec29e2::t_9fd3ea0f4797e2 1,3-11,15-20,22
+public/app.js
+  s_05a36802ec29e2::t_b0e789cf9726f5 13-16
+  s_05a36802ec29e2::t_f511215b765752 224-237
+public/index.html
+  s_05a36802ec29e2::t_088f5b208a7c9a 15-16
+test/api.test.js
+  s_05a36802ec29e2::t_c1e6fccee2a6e1 8-11,15-21,24-26
+  s_05a36802ec29e2::t_c1dc9a5555c3b4 36,42,48-50,54,63,66-70,74-75,80,88,94,96-97,101,107,117-120,124,126,128,136,138,140,145,150,152-153
+test/dompurify.test.js
+  s_05a36802ec29e2::t_fa482519199482 1,6-12,18-23,26
+public/login.html
+  s_05a36802ec29e2::t_3e0cda5b531349 1-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "d1211adcd6d9ef48ba3b290c5ad63ee380cdcbb0",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
