@@ -8,47 +8,44 @@
 npm install && npm start
 ```
 
-打开 http://localhost （默认 80 端口）。注意 80 为特权端口，Linux 下需要 root 或 `sudo setcap 'cap_net_bind_service=+ep' $(which node)` 授权。
+打开 http://localhost:8080 （默认 8080 端口，在 `config.json` 中修改）。
 
 ## 配置
 
-全部配置通过环境变量完成，示例如 `PORT=8080 npm start`：
+全部配置在项目根目录的 `config.json` 中（**首次启动自动生成**，并在控制台打印一次初始 admin 密码；如存在旧 `auth.json` 会自动导入其用户）：
 
-| 变量 | 默认值 | 说明 |
-|:-----|:-------|:-----|
-| `PORT` | `80` | 监听端口。如 `PORT=8080 npm start` 后访问 http://localhost:8080；也可用 `export PORT=8080` 写入 shell 配置持久生效 |
-| `CONTENT_DIR` | `./content` | 资料根目录，每个子文件夹是一个资料库 |
-| `AUTH_FILE` | `./auth.json` | 用户配置文件路径 |
-| `AUTH_SECRET` | 自动生成于 `./.auth-secret` | 登录签名密钥，多实例部署时建议显式指定同一值 |
-| `TRUST_PROXY` | 不设置 | 经反向代理终结 TLS 时设为 `1`，使登录 Cookie 正确附加 `Secure` |
-
-以 systemd 部署时，可写在 Service 单元中：
-
-```ini
-[Service]
-Environment=PORT=8080
-Environment=CONTENT_DIR=/srv/knowledge
-ExecStart=/usr/bin/node /opt/KnowledgeWebSite/server/index.js
+```json
+{
+  "port": 8080,
+  "contentDir": "./content",
+  "trustProxy": false,
+  "authSecret": "",
+  "users": [
+    { "username": "admin", "password": "随机生成的初始密码" }
+  ]
+}
 ```
+
+| 字段 | 默认值 | 说明 |
+|:-----|:-------|:-----|
+| `port` | `8080` | 监听端口，修改后重启生效 |
+| `contentDir` | `./content` | 资料根目录（相对 config.json 所在目录），每个子文件夹是一个资料库，重启生效 |
+| `trustProxy` | `false` | 经反向代理终结 TLS 时设为 `true`，登录 Cookie 才能正确附加 `Secure` |
+| `authSecret` | 自动生成于 `.auth-secret` | 登录签名密钥；多实例部署时各实例填同一值 |
+| `users` | 首次生成 | 用户名/明文密码数组，可多个；username 限字母、数字、`.`、`_`、`-`；保存即生效 |
+
+`config.json` 无需写全字段，未写的字段自动使用默认值。配置中没有有效用户时服务拒绝启动。
 
 ## 前置要求
 
 - Node.js ≥ 18
 - ripgrep（可选；缺失时搜索自动降级为内置遍历）
 
-## 登录配置
+## 登录
 
-网站强制登录。首次启动前，复制配置样例并修改用户名密码：
-
-```bash
-cp auth.json.example auth.json
-```
-
-`auth.json` 为用户名/明文密码数组，可配置多个用户；用户名限字母、数字、`.`、`_`、`-`。
-修改 `auth.json` 保存后即生效，无需重启。未配置有效用户时服务拒绝启动。
-签名密钥自动生成于 `.auth-secret`（可用 `AUTH_SECRET` 环境变量覆盖），登录态 7 天有效。
+网站强制登录。用户即 `config.json` 中的 `users` 数组（见「配置」），保存即生效，无需重启。
+签名密钥自动生成于 `.auth-secret`（也可在 `config.json` 的 `authSecret` 字段显式指定），登录态 7 天有效。
 登录接口有频率限制：每 IP 每分钟最多 10 次尝试，超出返回 429。
-经反向代理（Nginx 等）终结 TLS 部署时，设置 `TRUST_PROXY=1` 环境变量，使 HTTPS 请求的登录 Cookie 正确附加 `Secure` 属性。
 
 ## 使用
 
@@ -66,5 +63,6 @@ npm test
 
 ## 设计文档
 
+- `docs/superpowers/specs/2026-07-29-config-file-design.md`（配置体系）
 - `docs/superpowers/specs/2026-07-28-local-directory-mode-design.md`（当前架构）
 - `docs/superpowers/specs/2026-07-27-github-repo-browser-design.md`（历史：在线 clone 模式）
