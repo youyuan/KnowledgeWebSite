@@ -6,10 +6,16 @@ const config = require('./config');
 const SECRET_FILE = path.join(__dirname, '..', '..', '.auth-secret');
 const MAX_AGE_SEC = 7 * 24 * 3600; // 7 天
 
+const USERNAME_RE = /^[A-Za-z0-9._-]+$/;
+
 function loadUsers() {
-  const users = config.get().users;
+  const users = config.getUsers(); // 热生效：每次重读 config.json
   if (!users.length) throw new Error('config.json 中没有配置任何用户');
-  // username/password 校验已在 config.validate 完成
+  for (const u of users) {
+    if (!u || !USERNAME_RE.test(u.username || '') || typeof u.password !== 'string' || !u.password) {
+      throw new Error(`config.json: 用户配置非法（username 限字母数字._-，password 非空）: ${JSON.stringify(u && u.username)}`);
+    }
+  }
   return users;
 }
 

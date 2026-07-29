@@ -98,6 +98,19 @@ test('verifyToken 拒绝不存在用户与错误格式', () => {
   assert.equal(auth.verifyToken(token), null);
 });
 
+test('修改 config.json 的 users 保存即生效', async () => {
+  const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  cfg.users.push({ username: 'hot', password: 'hotpw' });
+  fs.writeFileSync(configPath, JSON.stringify(cfg));
+  const agent = request.agent(app);
+  const res = await agent.post('/api/login').send({ username: 'hot', password: 'hotpw' });
+  assert.equal(res.status, 200);
+  // 移除用户后其登录态立即失效
+  cfg.users = cfg.users.filter(u => u.username !== 'hot');
+  fs.writeFileSync(configPath, JSON.stringify(cfg));
+  assert.equal(auth.verifyToken(auth.sign('hot').token), null);
+});
+
 test('登录频率限制：每 IP 每分钟 10 次，第 11 次返回 429', async () => {
   // 重建 routes/auth 模块以获得全新的节流计数（同文件前面的测试共享同一 IP）
   delete require.cache[require.resolve('../server/routes/auth')];

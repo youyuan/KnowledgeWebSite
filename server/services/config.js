@@ -16,6 +16,7 @@ const USERNAME_RE = /^[A-Za-z0-9._-]+$/;
 
 let config = null;
 let configDir = null;
+let loadedPath = null;
 
 function randomPassword() {
   // base64url 字母表无 +/=，保证定长 12 位
@@ -63,6 +64,7 @@ function init(configPath = DEFAULT_CONFIG_PATH) {
   validate(merged);
   config = merged;
   configDir = path.dirname(configPath);
+  loadedPath = configPath;
   return config;
 }
 
@@ -80,4 +82,15 @@ function hasUsers() {
   return get().users.length > 0;
 }
 
-module.exports = { init, get, resolveContentDir, hasUsers, DEFAULTS };
+// 用户配置热生效：每次调用重新读取配置文件（文件损坏/被删时回退到 init 时的缓存）
+function getUsers() {
+  if (!config) throw new Error('配置未初始化，请先调用 init()');
+  try {
+    const raw = JSON.parse(fs.readFileSync(loadedPath, 'utf8'));
+    return Array.isArray(raw.users) ? raw.users : [];
+  } catch {
+    return config.users;
+  }
+}
+
+module.exports = { init, get, getUsers, resolveContentDir, hasUsers, DEFAULTS };
