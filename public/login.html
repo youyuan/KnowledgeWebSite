@@ -39,7 +39,7 @@
         }),
       });
       if (res.ok) {
-        location.href = next.startsWith('/') && !next.startsWith('//') ? next : '/';
+        location.href = next.startsWith('/') && !next.startsWith('//') && !next.includes('\\') ? next : '/';
       } else {
         const data = await res.json().catch(() => ({}));
         document.getElementById('error').textContent = data.error || '登录失败';
