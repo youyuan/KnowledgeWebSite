@@ -8,7 +8,28 @@
 npm install && npm start
 ```
 
-打开 http://localhost （默认 80 端口，可用 `PORT` 环境变量修改，内容目录可用 `CONTENT_DIR` 修改）。注意 80 为特权端口，Linux 下需要 root 或 `sudo setcap 'cap_net_bind_service=+ep' $(which node)` 授权。
+打开 http://localhost （默认 80 端口）。注意 80 为特权端口，Linux 下需要 root 或 `sudo setcap 'cap_net_bind_service=+ep' $(which node)` 授权。
+
+## 配置
+
+全部配置通过环境变量完成，示例如 `PORT=8080 npm start`：
+
+| 变量 | 默认值 | 说明 |
+|:-----|:-------|:-----|
+| `PORT` | `80` | 监听端口。如 `PORT=8080 npm start` 后访问 http://localhost:8080；也可用 `export PORT=8080` 写入 shell 配置持久生效 |
+| `CONTENT_DIR` | `./content` | 资料根目录，每个子文件夹是一个资料库 |
+| `AUTH_FILE` | `./auth.json` | 用户配置文件路径 |
+| `AUTH_SECRET` | 自动生成于 `./.auth-secret` | 登录签名密钥，多实例部署时建议显式指定同一值 |
+| `TRUST_PROXY` | 不设置 | 经反向代理终结 TLS 时设为 `1`，使登录 Cookie 正确附加 `Secure` |
+
+以 systemd 部署时，可写在 Service 单元中：
+
+```ini
+[Service]
+Environment=PORT=8080
+Environment=CONTENT_DIR=/srv/knowledge
+ExecStart=/usr/bin/node /opt/KnowledgeWebSite/server/index.js
+```
 
 ## 前置要求
 
