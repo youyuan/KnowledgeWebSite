@@ -1,0 +1,36 @@
+public/index.html
+  s_05a36802ec29e2::t_aff37143a01f6d 7
+package.json
+  s_05a36802ec29e2::t_244beeff778f66 30
+public/view.html
+  s_05a36802ec29e2::t_bde39214a85308 7,12-13,22,33-62,70,72
+server/routes/files.js
+  s_05a36802ec29e2::t_b1db4b31e19aaa 68-69
+public/style.css
+  s_05a36802ec29e2::t_37abe8e54e5fcf 26-27
+public/app.js
+  s_05a36802ec29e2::t_6320fbe5fe0a96 165,167
+  s_05a36802ec29e2::t_a27823f76a10e7 127-155
+server/index.js
+  s_05a36802ec29e2::t_a07905fd38202b 18
+test/api.test.js
+  s_05a36802ec29e2::t_3b9bd2abad0bde 73-80
+package-lock.json
+  s_05a36802ec29e2::t_353360ce633ecd 15,527-537
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "f21b555df036b6ae2fcc27fb479781efc0a45f08",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
