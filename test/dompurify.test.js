@@ -1,16 +1,29 @@
-const { test } = require('node:test');
+const { test, before } = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { makeTempDir } = require('./helpers');
+
+const tmp = makeTempDir('kw-auth-');
+process.env.AUTH_FILE = path.join(tmp, 'auth.json');
+fs.writeFileSync(process.env.AUTH_FILE, JSON.stringify([{ username: 'tester', password: 'pw' }]));
+process.env.AUTH_SECRET = 'test-secret';
+
 const request = require('supertest');
 const { createApp } = require('../server/index');
 
 const PURIFY_PATH = path.join(__dirname, '..', 'node_modules', 'dompurify', 'dist', 'purify.min.js');
 
+let agent;
+before(async () => {
+  agent = request.agent(createApp());
+  await agent.post('/api/login').send({ username: 'tester', password: 'pw' });
+});
+
 test('vendor 路由提供 purify.min.js', async () => {
   assert.ok(fs.existsSync(PURIFY_PATH), 'dompurify 未安装或缺少 dist/purify.min.js');
-  const res = await request(createApp()).get('/vendor/dompurify/purify.min.js');
+  const res = await agent.get('/vendor/dompurify/purify.min.js');
   assert.equal(res.status, 200);
 });
 

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>登录 - 知识库浏览器</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+           background: #f4f6f7; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,.08);
+            padding: 32px; width: 320px; }
+    h1 { font-size: 20px; margin: 0 0 24px; text-align: center; }
+    input { width: 100%; box-sizing: border-box; padding: 10px 12px; margin-bottom: 14px;
+            border: 1px solid #d5dde1; border-radius: 8px; font-size: 14px; }
+    button { width: 100%; padding: 10px; border: none; border-radius: 8px; background: #0e7c86;
+             color: #fff; font-size: 15px; cursor: pointer; }
+    button:hover { background: #11616b; }
+    .error { color: #b23a48; font-size: 13px; min-height: 18px; margin-bottom: 8px; text-align: center; }
+  </style>
+</head>
+<body>
+  <form class="card" id="login-form">
+    <h1>知识库浏览器</h1>
+    <div class="error" id="error"></div>
+    <input id="username" autocomplete="username" placeholder="用户名" required autofocus>
+    <input id="password" type="password" autocomplete="current-password" placeholder="密码" required>
+    <button type="submit">登 录</button>
+  </form>
+  <script>
+    const next = new URLSearchParams(location.search).get('next') || '/';
+    document.getElementById('login-form').onsubmit = async e => {
+      e.preventDefault();
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('username').value.trim(),
+          password: document.getElementById('password').value,
+        }),
+      });
+      if (res.ok) {
+        location.href = next.startsWith('/') && !next.startsWith('//') ? next : '/';
+      } else {
+        const data = await res.json().catch(() => ({}));
+        document.getElementById('error').textContent = data.error || '登录失败';
+      }
+    };
+  </script>
+</body>
+</html>

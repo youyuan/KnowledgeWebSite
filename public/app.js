@@ -10,6 +10,10 @@ async function api(path, options) {
     body: options.body && JSON.stringify(options.body),
   });
   const data = await res.json().catch(() => ({}));
+  if (res.status === 401) {
+    location.href = `/login.html?next=${encodeURIComponent(location.pathname + location.search)}`;
+    throw new Error('未登录');
+  }
   if (!res.ok) throw new Error(data.error || `请求失败 (${res.status})`);
   return data;
 }
@@ -216,5 +220,19 @@ $('#search-input').oninput = e => {
   if (!q) return;
   searchTimer = setTimeout(() => doSearch(q).catch(err => alert(err.message)), 300);
 };
+
+async function loadUser() {
+  try {
+    const { username } = await api('/api/me');
+    $('#user-info').textContent = username;
+  } catch { /* 未登录时 api() 已跳转 */ }
+}
+
+$('#btn-logout').onclick = async () => {
+  await fetch('/api/logout', { method: 'POST' });
+  location.href = '/login.html';
+};
+
+loadUser();
 
 loadRepos();
