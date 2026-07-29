@@ -1,0 +1,21 @@
+README.md
+  s_05a36802ec29e2::t_8e15cf41f4bbc4 11
+server/index.js
+  s_05a36802ec29e2::t_35b2c45bc60df0 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "f136bf8f2ea7a457da300e9a5ad9a079231813b2",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
