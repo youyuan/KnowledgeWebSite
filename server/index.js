@@ -5,7 +5,11 @@ function createApp() {
   const app = express();
   app.use(express.json({ limit: '5mb' }));
 
+  app.use('/api', require('./routes/auth'));
+  app.use(require('./middleware/auth').requireAuth);
+
   app.get('/api/health', (req, res) => res.json({ ok: true }));
+  app.get('/api/me', (req, res) => res.json({ username: req.user }));
 
   app.use('/api/repos', require('./routes/repos'));
   app.use('/api/repos', require('./routes/files'));
@@ -27,6 +31,7 @@ function createApp() {
 
 if (require.main === module) {
   const port = process.env.PORT || 3000;
+  require('./services/auth').loadUsers(); // 无有效用户配置时抛错拒绝启动
   createApp().listen(port, () => console.log(`知识库浏览器已启动: http://localhost:${port}`));
 }
 
