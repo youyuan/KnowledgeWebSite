@@ -1,0 +1,21 @@
+docs/superpowers/plans/2026-07-29-login-auth.md
+  s_05a36802ec29e2::t_f640d9e53b2ca2 1-590
+docs/superpowers/specs/2026-07-29-login-auth-design.md
+  s_05a36802ec29e2::t_7e9d26ab3e8996 1-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "e0c83f6291248cadf5b3aecb8cbe5a7089ffaaf2",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
