@@ -1,0 +1,23 @@
+server/routes/auth.js
+  s_05a36802ec29e2::t_ad249c703a720b 4-6,8,19,24
+test/auth.test.js
+  s_05a36802ec29e2::t_b0b6e183a920df 51-56
+server/index.js
+  s_05a36802ec29e2::t_1d0d91360a4ab3 8,10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "60ccd060a8927592b0686fffe7eeac1e3f129b4f",
+  "prompts": {},
+  "sessions": {
+    "s_05a36802ec29e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474f8561-78db-47a2-ac09-cc35cbd3cc37",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
