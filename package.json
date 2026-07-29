@@ -27,6 +27,7 @@
     "@highlightjs/cdn-assets": "^11.11.1",
     "dompurify": "^3.4.12",
     "express": "^5.2.1",
+    "github-markdown-css": "^5.9.0",
     "marked": "^18.0.7"
   },
   "devDependencies": {

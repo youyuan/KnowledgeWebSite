@@ -70,6 +70,14 @@ test('GET raw 返回原始 HTML', async () => {
   assert.match(res.text, /<html>/);
 });
 
+test('GET raw 支持点开头目录（.assets 等）', async () => {
+  fs.mkdirSync(dir('lib1', '.assets'), { recursive: true });
+  fs.writeFileSync(dir('lib1', '.assets', 'note.txt'), 'dot\n');
+  const res = await request(app).get('/api/repos/lib1/raw').query({ path: '.assets/note.txt' });
+  assert.equal(res.status, 200);
+  assert.equal(res.text, 'dot\n');
+});
+
 test('POST file 新建空文件；409/404 行为', async () => {
   assert.equal((await request(app).post('/api/repos/lib1/file').query({ path: 'new.md' })).status, 201);
   assert.equal(fs.readFileSync(dir('lib1', 'new.md'), 'utf8'), '');

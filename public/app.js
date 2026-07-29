@@ -124,6 +124,35 @@ function rawUrl(relPath) {
   return `/api/repos/${state.current}/raw?path=${encodeURIComponent(relPath)}`;
 }
 
+// 保留 GFM 任务列表的复选框（DOMPurify 默认会剥掉 input）
+const SANITIZE_OPTIONS = { ADD_TAGS: ['input'], ADD_ATTR: ['type', 'checked', 'disabled'] };
+
+// 把渲染结果中相对路径的图片/链接改写到 raw 接口（以 md 文件所在目录为基准），与 GitHub 行为一致
+function resolveMedia(container, relPath) {
+  const baseDir = relPath.split('/').slice(0, -1).join('/');
+  const resolveRel = url => {
+    if (!url || /^(https?:)?\/\//.test(url) || url.startsWith('data:') || url.startsWith('#') || url.startsWith('/')) return null;
+    const out = [];
+    for (const p of (baseDir ? `${baseDir}/${url}` : url).split('/')) {
+      if (p === '' || p === '.') continue;
+      else if (p === '..') out.pop();
+      else out.push(p);
+    }
+    return out.join('/');
+  };
+  container.querySelectorAll('img').forEach(img => {
+    const resolved = resolveRel(img.getAttribute('src'));
+    if (resolved) img.src = rawUrl(resolved);
+  });
+  container.querySelectorAll('a').forEach(a => {
+    const resolved = resolveRel(a.getAttribute('href'));
+    if (resolved) {
+      a.href = rawUrl(resolved);
+      a.target = '_blank';
+    }
+  });
+}
+
 function renderMarkdown(content, relPath) {
   const main = $('#main');
   main.innerHTML = '';
@@ -133,8 +162,9 @@ function renderMarkdown(content, relPath) {
   ]));
   const article = document.createElement('article');
   article.className = 'markdown-body';
-  article.innerHTML = DOMPurify.sanitize(marked.parse(content));
+  article.innerHTML = DOMPurify.sanitize(marked.parse(content), SANITIZE_OPTIONS);
   article.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+  resolveMedia(article, relPath);
   main.append(article);
 }
 

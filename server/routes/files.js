@@ -65,7 +65,8 @@ router.get('/:id/raw', (req, res, next) => {
   try {
     store.getRepo(req.params.id);
     const full = store.safeResolve(req.params.id, req.query.path);
-    res.sendFile(full);
+    // dotfiles: 'allow'——资料库可能含 .assets 等点开头目录（.git 已被 safeResolve 拒绝）
+    res.sendFile(full, { dotfiles: 'allow' });
   } catch (err) {
     next(err);
   }
