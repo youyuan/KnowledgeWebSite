@@ -3,6 +3,7 @@ const express = require('express');
 
 function createApp() {
   const app = express();
+  if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY);
   app.use(express.json({ limit: '5mb' }));
 
   app.use('/api', require('./routes/auth').login);

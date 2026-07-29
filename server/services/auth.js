@@ -64,7 +64,7 @@ function verifyToken(token) {
   const expect = Buffer.from(hmac(payload));
   const actual = Buffer.from(sig);
   if (expect.length !== actual.length || !crypto.timingSafeEqual(expect, actual)) return null;
-  if (Number(expiry) < Date.now()) return null;
+  if (!Number.isFinite(Number(expiry)) || Number(expiry) < Date.now()) return null;
   if (!loadUsers().some(u => u.username === username)) return null;
   return username;
 }

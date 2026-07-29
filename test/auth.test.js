@@ -76,12 +76,32 @@ test('签名篡改与过期令牌被拒绝', () => {
   const { token } = auth.sign('admin');
   assert.equal(auth.verifyToken(token), 'admin');
   assert.equal(auth.verifyToken(token.slice(0, -2) + '00'), null);
-  const expired = `admin|${Date.now() - 1000}|${'0'.repeat(64)}`;
-  assert.equal(auth.verifyToken(expired), null);
+  // 用真实 HMAC 构造过期令牌，确保走到过期分支而非签名比对被拒
+  const crypto = require('crypto');
+  const expiredPayload = `admin|${Date.now() - 1000}`;
+  const expiredSig = crypto.createHmac('sha256', 'test-secret').update(expiredPayload).digest('hex');
+  assert.equal(auth.verifyToken(`${expiredPayload}|${expiredSig}`), null);
+  // NaN 过期时间纵深防御：签名合法但 expiry 非有限数字同样拒绝
+  const nanPayload = 'admin|abc';
+  const nanSig = crypto.createHmac('sha256', 'test-secret').update(nanPayload).digest('hex');
+  assert.equal(auth.verifyToken(`${nanPayload}|${nanSig}`), null);
   assert.equal(auth.verifyToken('garbage'), null);
 });
 
 test('verifyToken 拒绝不存在用户与错误格式', () => {
   const { token } = auth.sign('ghost');
   assert.equal(auth.verifyToken(token), null);
+});
+
+test('登录频率限制：每 IP 每分钟 10 次，第 11 次返回 429', async () => {
+  // 重建 routes/auth 模块以获得全新的节流计数（同文件前面的测试共享同一 IP）
+  delete require.cache[require.resolve('../server/routes/auth')];
+  const freshApp = createApp();
+  for (let i = 0; i < 10; i++) {
+    const res = await request(freshApp).post('/api/login').send({ username: 'admin', password: 'wrong' });
+    assert.equal(res.status, 401, `第 ${i + 1} 次应为 401`);
+  }
+  const res = await request(freshApp).post('/api/login').send({ username: 'admin', password: 'wrong' });
+  assert.equal(res.status, 429);
+  assert.deepEqual(res.body, { error: '尝试过于频繁，请稍后再试' });
 });

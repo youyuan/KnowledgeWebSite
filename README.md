@@ -24,8 +24,10 @@ cp auth.json.example auth.json
 ```
 
 `auth.json` 为用户名/明文密码数组，可配置多个用户；用户名限字母、数字、`.`、`_`、`-`。
-修改 `auth.json` 后重启服务生效。未配置有效用户时服务拒绝启动。
+修改 `auth.json` 保存后即生效，无需重启。未配置有效用户时服务拒绝启动。
 签名密钥自动生成于 `.auth-secret`（可用 `AUTH_SECRET` 环境变量覆盖），登录态 7 天有效。
+登录接口有频率限制：每 IP 每分钟最多 10 次尝试，超出返回 429。
+经反向代理（Nginx 等）终结 TLS 部署时，设置 `TRUST_PROXY=1` 环境变量，使 HTTPS 请求的登录 Cookie 正确附加 `Secure` 属性。
 
 ## 使用
 
