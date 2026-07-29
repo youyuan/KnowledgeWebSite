@@ -1,0 +1,19 @@
+README.md
+  s_c35b29c67263cf::t_f0cc2d6a11eee2 11,15-27,29,31-37,44,46-47,66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "d80797cdf712ed4a43658de99d522c895d8406e2",
+  "prompts": {},
+  "sessions": {
+    "s_c35b29c67263cf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54d41c17-8996-40fd-8a3f-1f67f33dd8de",
+        "model": "unknown"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
