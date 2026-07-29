@@ -5,8 +5,9 @@ function createApp() {
   const app = express();
   app.use(express.json({ limit: '5mb' }));
 
-  app.use('/api', require('./routes/auth'));
+  app.use('/api', require('./routes/auth').login);
   app.use(require('./middleware/auth').requireAuth);
+  app.use('/api', require('./routes/auth').logout);
 
   app.get('/api/health', (req, res) => res.json({ ok: true }));
   app.get('/api/me', (req, res) => res.json({ username: req.user }));

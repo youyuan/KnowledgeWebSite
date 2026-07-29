@@ -48,6 +48,12 @@ test('未登录访问 API 返回 401', async () => {
   assert.equal(res.status, 401);
 });
 
+test('未登录调用登出返回 401', async () => {
+  const res = await request(app).post('/api/logout');
+  assert.equal(res.status, 401);
+  assert.ok(!res.headers['set-cookie']);
+});
+
 test('未登录访问页面 302 跳登录页并带 next', async () => {
   const res = await request(app).get('/');
   assert.equal(res.status, 302);

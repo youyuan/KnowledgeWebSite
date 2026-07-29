@@ -1,9 +1,11 @@
 const express = require('express');
 const auth = require('../services/auth');
 
-const router = express.Router();
+// login：挂在 requireAuth 之前（豁免登录）；logout：挂在 requireAuth 之后（需登录）
+const login = express.Router();
+const logout = express.Router();
 
-router.post('/login', (req, res) => {
+login.post('/login', (req, res) => {
   const { username, password } = req.body || {};
   if (!auth.verify(username, password)) {
     return res.status(401).json({ error: '用户名或密码错误' });
@@ -14,9 +16,9 @@ router.post('/login', (req, res) => {
   res.json({ ok: true, username });
 });
 
-router.post('/logout', (req, res) => {
+logout.post('/logout', (req, res) => {
   res.setHeader('Set-Cookie', 'auth=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');
   res.json({ ok: true });
 });
 
-module.exports = router;
+module.exports = { login, logout };
