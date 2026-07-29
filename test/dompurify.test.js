@@ -5,10 +5,13 @@ const path = require('path');
 const vm = require('vm');
 const { makeTempDir } = require('./helpers');
 
-const tmp = makeTempDir('kw-auth-');
-process.env.AUTH_FILE = path.join(tmp, 'auth.json');
-fs.writeFileSync(process.env.AUTH_FILE, JSON.stringify([{ username: 'tester', password: 'pw' }]));
-process.env.AUTH_SECRET = 'test-secret';
+const tmp = makeTempDir('kw-test-');
+fs.writeFileSync(path.join(tmp, 'config.json'), JSON.stringify({
+  contentDir: makeTempDir('kw-content-'),
+  authSecret: 'test-secret',
+  users: [{ username: 'tester', password: 'pw' }],
+}));
+require('../server/services/config').init(path.join(tmp, 'config.json'));
 
 const request = require('supertest');
 const { createApp } = require('../server/index');

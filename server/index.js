@@ -3,7 +3,7 @@ const express = require('express');
 
 function createApp() {
   const app = express();
-  if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY);
+  if (require('./services/config').get().trustProxy) app.set('trust proxy', 1);
   app.use(express.json({ limit: '5mb' }));
 
   app.use('/api', require('./routes/auth').login);
@@ -32,8 +32,13 @@ function createApp() {
 }
 
 if (require.main === module) {
-  const port = process.env.PORT || 80;
-  require('./services/auth').loadUsers(); // 无有效用户配置时抛错拒绝启动
+  const config = require('./services/config');
+  config.init(); // config.json 不存在时自动生成
+  if (!config.hasUsers()) {
+    console.error('config.json 中没有配置任何用户，拒绝启动');
+    process.exit(1);
+  }
+  const port = config.get().port;
   createApp().listen(port, () => console.log(`知识库浏览器已启动: http://localhost:${port}`));
 }
 

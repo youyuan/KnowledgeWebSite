@@ -1,27 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const config = require('./config');
 
-const AUTH_FILE = process.env.AUTH_FILE || path.join(__dirname, '..', '..', 'auth.json');
 const SECRET_FILE = path.join(__dirname, '..', '..', '.auth-secret');
 const MAX_AGE_SEC = 7 * 24 * 3600; // 7 天
-const USERNAME_RE = /^[A-Za-z0-9._-]+$/;
 
 function loadUsers() {
-  let users;
-  try {
-    users = JSON.parse(fs.readFileSync(AUTH_FILE, 'utf8'));
-  } catch {
-    throw new Error(`无法读取用户配置 ${AUTH_FILE}，请参照 auth.json.example 创建`);
-  }
-  if (!Array.isArray(users) || users.length === 0) {
-    throw new Error(`${AUTH_FILE} 中没有配置任何用户`);
-  }
-  for (const u of users) {
-    if (!u || !USERNAME_RE.test(u.username || '') || typeof u.password !== 'string' || !u.password) {
-      throw new Error(`用户配置非法（username 限字母数字._-，password 为非空明文）: ${JSON.stringify(u && u.username)}`);
-    }
-  }
+  const users = config.get().users;
+  if (!users.length) throw new Error('config.json 中没有配置任何用户');
+  // username/password 校验已在 config.validate 完成
   return users;
 }
 
@@ -35,7 +23,7 @@ function verify(username, password) {
 }
 
 function getSecret() {
-  if (process.env.AUTH_SECRET) return process.env.AUTH_SECRET;
+  if (config.get().authSecret) return config.get().authSecret;
   try {
     return fs.readFileSync(SECRET_FILE, 'utf8').trim();
   } catch {

@@ -4,11 +4,14 @@ const fs = require('fs');
 const path = require('path');
 const { makeTempDir } = require('./helpers');
 
-process.env.CONTENT_DIR = makeTempDir('kw-content-');
-const tmp = makeTempDir('kw-auth-');
-process.env.AUTH_FILE = path.join(tmp, 'auth.json');
-fs.writeFileSync(process.env.AUTH_FILE, JSON.stringify([{ username: 'tester', password: 'pw' }]));
-process.env.AUTH_SECRET = 'test-secret';
+const contentDir = makeTempDir('kw-content-');
+const tmp = makeTempDir('kw-test-');
+fs.writeFileSync(path.join(tmp, 'config.json'), JSON.stringify({
+  contentDir,
+  authSecret: 'test-secret',
+  users: [{ username: 'tester', password: 'pw' }],
+}));
+require('../server/services/config').init(path.join(tmp, 'config.json'));
 const request = require('supertest');
 const { createApp } = require('../server/index');
 
@@ -19,7 +22,7 @@ const req = {
   put: (...a) => agent.put(...a),
   delete: (...a) => agent.delete(...a),
 };
-const dir = (...parts) => path.join(process.env.CONTENT_DIR, ...parts);
+const dir = (...parts) => path.join(contentDir, ...parts);
 
 before(async () => {
   agent = request.agent(createApp());

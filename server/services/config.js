@@ -35,7 +35,7 @@ function generate(configPath) {
     users = [{ username: 'admin', password }];
     console.log(`初始管理员账号: admin / ${password}（请登录后到 config.json 修改）`);
   }
-  fs.writeFileSync(configPath, JSON.stringify({ ...DEFAULTS, users }, null, 2) + '\n');
+  fs.writeFileSync(configPath, JSON.stringify({ ...DEFAULTS, users }, null, 2) + '\n', { mode: 0o600 });
   console.log(`已生成默认配置文件: ${configPath}`);
 }
 

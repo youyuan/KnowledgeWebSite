@@ -4,10 +4,16 @@ const fs = require('fs');
 const path = require('path');
 const { makeTempDir } = require('./helpers');
 
-process.env.CONTENT_DIR = makeTempDir('kw-content-');
+const contentDir = makeTempDir('kw-content-');
+const tmp = makeTempDir('kw-test-');
+fs.writeFileSync(path.join(tmp, 'config.json'), JSON.stringify({
+  contentDir,
+  users: [{ username: 'tester', password: 'pw' }],
+}));
+require('../server/services/config').init(path.join(tmp, 'config.json'));
 const store = require('../server/services/contentStore');
 
-const dir = name => path.join(process.env.CONTENT_DIR, name);
+const dir = name => path.join(contentDir, name);
 
 test('初始为空列表', () => {
   assert.deepEqual(store.listRepos(), []);

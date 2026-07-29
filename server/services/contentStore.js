@@ -1,7 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const CONTENT_DIR = process.env.CONTENT_DIR || path.join(__dirname, '..', '..', 'content');
+const config = require('./config');
+
+function contentDir() {
+  return config.resolveContentDir();
+}
 
 const ID_RE = /^[A-Za-z0-9._-]+$/;
 
@@ -13,8 +17,8 @@ class HttpError extends Error {
 }
 
 function listRepos() {
-  fs.mkdirSync(CONTENT_DIR, { recursive: true });
-  return fs.readdirSync(CONTENT_DIR, { withFileTypes: true })
+  fs.mkdirSync(contentDir(), { recursive: true });
+  return fs.readdirSync(contentDir(), { withFileTypes: true })
     .filter(e => e.isDirectory() && ID_RE.test(e.name))
     .map(e => ({ id: e.name }))
     .sort((a, b) => a.id.localeCompare(b.id));
@@ -22,7 +26,7 @@ function listRepos() {
 
 function repoDir(id) {
   if (id === '.' || id === '..' || !ID_RE.test(id)) throw new HttpError(400, `非法资料库 id: ${id}`);
-  return path.join(CONTENT_DIR, id);
+  return path.join(contentDir(), id);
 }
 
 function getRepo(id) {
@@ -53,4 +57,4 @@ function safeResolve(id, relPath) {
   return resolved;
 }
 
-module.exports = { HttpError, listRepos, getRepo, createRepo, repoDir, safeResolve, CONTENT_DIR };
+module.exports = { HttpError, listRepos, getRepo, createRepo, repoDir, safeResolve };

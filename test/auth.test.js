@@ -4,10 +4,15 @@ const fs = require('fs');
 const path = require('path');
 const { makeTempDir } = require('./helpers');
 
-const tmp = makeTempDir('kw-auth-');
-process.env.AUTH_FILE = path.join(tmp, 'auth.json');
-fs.writeFileSync(process.env.AUTH_FILE, JSON.stringify([{ username: 'admin', password: 's3cret' }]));
-process.env.AUTH_SECRET = 'test-secret';
+const tmp = makeTempDir('kw-test-');
+const configPath = path.join(tmp, 'config.json');
+fs.writeFileSync(configPath, JSON.stringify({
+  contentDir: makeTempDir('kw-content-'),
+  authSecret: 'test-secret',
+  users: [{ username: 'admin', password: 's3cret' }],
+}));
+const config = require('../server/services/config');
+config.init(configPath);
 
 const request = require('supertest');
 const auth = require('../server/services/auth');
@@ -20,12 +25,12 @@ async function login(agent) {
 }
 
 test('loadUsers 无配置时抛错', () => {
-  const saved = process.env.AUTH_FILE;
-  process.env.AUTH_FILE = path.join(tmp, 'nonexistent.json');
-  delete require.cache[require.resolve('../server/services/auth')];
-  assert.throws(() => require('../server/services/auth').loadUsers(), /auth\.json|用户/);
-  process.env.AUTH_FILE = saved;
-  delete require.cache[require.resolve('../server/services/auth')];
+  const emptyDir = makeTempDir('kw-test-');
+  const emptyPath = path.join(emptyDir, 'config.json');
+  fs.writeFileSync(emptyPath, JSON.stringify({ users: [] }));
+  config.init(emptyPath);
+  assert.throws(() => auth.loadUsers(), /用户/);
+  config.init(configPath);
 });
 
 test('登录成功签发 Cookie，/api/me 返回用户名', async () => {
