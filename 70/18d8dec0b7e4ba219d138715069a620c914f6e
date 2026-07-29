@@ -1,0 +1,25 @@
+server/services/config.js
+  s_c35b29c67263cf::t_93c6d91676d2a3 19
+  s_c35b29c67263cf::t_e5608bfd2fddf1 67
+  s_c35b29c67263cf::t_524748bb1036eb 85-96
+server/services/auth.js
+  s_c35b29c67263cf::t_2ed04d1bdfebb1 9-10,12,14-18
+test/auth.test.js
+  s_c35b29c67263cf::t_20fdc3648d4fca 101-113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "7018d8dec0b7e4ba219d138715069a620c914f6e",
+  "prompts": {},
+  "sessions": {
+    "s_c35b29c67263cf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54d41c17-8996-40fd-8a3f-1f67f33dd8de",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
