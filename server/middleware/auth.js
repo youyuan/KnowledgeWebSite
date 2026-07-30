@@ -1,10 +1,11 @@
 const auth = require('../services/auth');
 
-// 例外：登录页、登录接口、vendor 静态资源
+// 例外：登录页、登录接口、vendor 静态资源、免登录分享链接
 function isExempt(req) {
   return req.path === '/login.html'
     || (req.path === '/api/login' && req.method === 'POST')
-    || req.path.startsWith('/vendor/');
+    || req.path.startsWith('/vendor/')
+    || req.path.startsWith('/share/');
 }
 
 function requireAuth(req, res, next) {

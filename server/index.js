@@ -7,6 +7,7 @@ function createApp() {
   app.use(express.json({ limit: '5mb' }));
 
   app.use('/api', require('./routes/auth').login);
+  app.use('/share', require('./routes/share').pages); // 免登录分享链接，挂在 requireAuth 之前
   app.use(require('./middleware/auth').requireAuth);
   app.use('/api', require('./routes/auth').logout);
 
@@ -14,6 +15,7 @@ function createApp() {
   app.get('/api/me', (req, res) => res.json({ username: req.user }));
 
   app.use('/api/repos', require('./routes/repos'));
+  app.use('/api/repos', require('./routes/share').api);
   app.use('/api/repos', require('./routes/files'));
   app.use('/api/repos', require('./routes/search'));
 

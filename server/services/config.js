@@ -78,6 +78,12 @@ function resolveContentDir() {
   return path.isAbsolute(dir) ? dir : path.resolve(configDir, dir);
 }
 
+// config.json 所在目录（shares.json 等派生存放于此，测试用临时 config 时自动隔离）
+function getConfigDir() {
+  if (!config) throw new Error('配置未初始化，请先调用 init()');
+  return configDir;
+}
+
 function hasUsers() {
   return get().users.length > 0;
 }
@@ -93,4 +99,4 @@ function getUsers() {
   }
 }
 
-module.exports = { init, get, getUsers, resolveContentDir, hasUsers, DEFAULTS };
+module.exports = { init, get, getUsers, resolveContentDir, getConfigDir, hasUsers, DEFAULTS };
