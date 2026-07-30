@@ -223,20 +223,39 @@ function openShareDialog(relPath) {
   urlInput.className = 'share-url';
   urlInput.readOnly = true;
   urlInput.placeholder = '生成中…';
+  urlInput.title = '点击复制';
+  urlInput.onclick = async () => {
+    if (urlInput.value) await copyText(urlInput.value) && urlInput.select();
+  };
+// 一键复制：优先 clipboard API（需安全上下文），HTTP 等场景降级 execCommand
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch { /* 继续降级 */ }
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.append(ta);
+  ta.focus();
+  ta.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch { /* 忽略 */ }
+  ta.remove();
+  return ok;
+}
+
   const copyBtn = document.createElement('button');
   copyBtn.className = 'share-copy';
   copyBtn.textContent = '复制';
   copyBtn.onclick = async () => {
     if (!urlInput.value) return;
-    try {
-      await navigator.clipboard.writeText(urlInput.value);
-      copyBtn.textContent = '已复制 ✓';
-    } catch {
-      // clipboard API 不可用（如非安全上下文）时降级：选中链接让用户手动复制
-      urlInput.focus();
-      urlInput.select();
-      copyBtn.textContent = '已选中，请手动复制';
-    }
+    const ok = await copyText(urlInput.value);
+    copyBtn.textContent = ok ? '已复制 ✓' : '复制失败，请手动复制';
+    if (!ok) { urlInput.focus(); urlInput.select(); }
   };
   linkRow.append(urlInput, copyBtn);
   const expires = document.createElement('p');
