@@ -165,6 +165,21 @@ function resolveMedia(container, relPath) {
 //     </div>
 //   </div>
 // </div>
+// 分享弹层：选择时间即自动生成链接，用户只需复制
+// DOM 结构：
+// <div class="share-overlay">                    遮罩，点击卡片外关闭
+//   <div class="share-card">
+//     <h3>分享文档</h3>
+//     <div class="share-options">                有效期单选（7 天默认 / 30 天 / 永久 / 自定义+天数输入）</div>
+//     <div class="share-result">
+//       <div class="share-link-row">
+//         <input class="share-url" readonly>     完整链接
+//         <button class="share-copy">复制</button>
+//       </div>
+//       <p class="share-expires">…</p>           过期时间（永久显示「永久有效」）
+//     </div>
+//   </div>
+// </div>
 function openShareDialog(relPath) {
   const overlay = document.createElement('div');
   overlay.className = 'share-overlay';
@@ -176,6 +191,7 @@ function openShareDialog(relPath) {
   const title = document.createElement('h3');
   title.textContent = '分享文档';
 
+  // 有效期选项
   const options = document.createElement('div');
   options.className = 'share-options';
   const customInput = document.createElement('input');
@@ -183,86 +199,91 @@ function openShareDialog(relPath) {
   customInput.className = 'share-custom-days';
   customInput.min = 1;
   customInput.max = 365;
+  customInput.placeholder = '天数';
   for (const [value, text] of [['7', '7 天'], ['30', '30 天'], ['', '永久'], ['custom', '自定义']]) {
     const label = document.createElement('label');
+    label.className = 'share-option';
     const radio = document.createElement('input');
     radio.type = 'radio';
     radio.name = 'share-days';
     radio.value = value;
     if (value === '7') radio.checked = true;
     label.append(radio, document.createTextNode(text));
-    if (value === 'custom') label.append(customInput, document.createTextNode('天'));
+    if (value === 'custom') label.append(customInput);
     options.append(label);
   }
   customInput.onfocus = () => { card.querySelector('input[value="custom"]').checked = true; };
 
+  // 链接结果区
   const result = document.createElement('div');
   result.className = 'share-result';
-  result.hidden = true;
+  const linkRow = document.createElement('div');
+  linkRow.className = 'share-link-row';
   const urlInput = document.createElement('input');
   urlInput.className = 'share-url';
   urlInput.readOnly = true;
-  const expires = document.createElement('p');
-  expires.className = 'share-expires';
-  result.append(urlInput, expires);
-
-  const actions = document.createElement('div');
-  actions.className = 'share-actions';
+  urlInput.placeholder = '生成中…';
   const copyBtn = document.createElement('button');
   copyBtn.className = 'share-copy';
   copyBtn.textContent = '复制';
-  copyBtn.hidden = true;
   copyBtn.onclick = async () => {
+    if (!urlInput.value) return;
     try {
       await navigator.clipboard.writeText(urlInput.value);
-      copyBtn.textContent = '已复制';
+      copyBtn.textContent = '已复制 ✓';
     } catch {
       // clipboard API 不可用（如非安全上下文）时降级：选中链接让用户手动复制
       urlInput.focus();
       urlInput.select();
-      copyBtn.textContent = '请手动复制（已选中）';
+      copyBtn.textContent = '已选中，请手动复制';
     }
   };
-  const genBtn = document.createElement('button');
-  genBtn.className = 'share-generate';
-  genBtn.textContent = '生成链接';
-  genBtn.onclick = async () => {
+  linkRow.append(urlInput, copyBtn);
+  const expires = document.createElement('p');
+  expires.className = 'share-expires';
+  result.append(linkRow, expires);
+
+  // 生成/重新生成链接
+  let generating = 0;
+  async function generate() {
     const selected = card.querySelector('input[name="share-days"]:checked').value;
     let days = null;
     if (selected === 'custom') {
       days = Number(customInput.value);
-      if (!Number.isInteger(days) || days < 1 || days > 365) {
-        alert('自定义有效期需为 1–365 的整数天数');
-        return;
-      }
+      if (!Number.isInteger(days) || days < 1 || days > 365) return; // 输入不完整时静默等待
     } else if (selected !== '') {
       days = Number(selected);
     }
-    genBtn.disabled = true;
+    const seq = ++generating;
+    urlInput.value = '';
+    urlInput.placeholder = '生成中…';
+    copyBtn.textContent = '复制';
     try {
       const { url, expiresAt } = await api(`/api/repos/${state.current}/share`, {
         method: 'POST', body: { path: relPath, days },
       });
+      if (seq !== generating) return; // 已有更新的请求，丢弃过期响应
       urlInput.value = location.origin + url;
       expires.textContent = expiresAt ? `有效期至 ${new Date(expiresAt).toLocaleString()}` : '永久有效';
-      result.hidden = false;
-      copyBtn.hidden = false;
-      copyBtn.textContent = '复制';
     } catch (err) {
-      alert(err.message);
-    } finally {
-      genBtn.disabled = false;
+      if (seq === generating) {
+        urlInput.placeholder = '';
+        expires.textContent = `生成失败：${err.message}`;
+      }
     }
-  };
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'share-close';
-  closeBtn.textContent = '关闭';
-  closeBtn.onclick = () => overlay.remove();
-  actions.append(genBtn, copyBtn, closeBtn);
+  }
 
-  card.append(title, options, result, actions);
+  options.onchange = generate;
+  let customTimer;
+  customInput.oninput = () => {
+    clearTimeout(customTimer);
+    customTimer = setTimeout(generate, 500);
+  };
+
+  card.append(title, options, result);
   overlay.append(card);
   document.body.append(overlay);
+  generate(); // 打开即按默认 7 天生成
 }
 
 function renderMarkdown(content, relPath) {

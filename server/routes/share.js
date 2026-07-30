@@ -41,25 +41,44 @@ function notFoundPage(res) {
 // markdown 分享渲染页：内嵌脚本从 /share/<token>/content 取文本，vendor 渲染，相对资源改写到 res 端点
 function renderPage(share) {
   const token = share.token;
+  const docName = share.path.split('/').pop();
+  const expiryText = share.expiresAt
+    ? `有效期至 ${new Date(share.expiresAt).toLocaleString('zh-CN')}`
+    : '永久有效';
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escapeHtml(share.path)} - 知识库浏览器</title>
+  <title>${escapeHtml(docName)} - 文档分享</title>
   <link rel="stylesheet" href="/vendor/github-markdown-css/github-markdown-light.css">
   <link rel="stylesheet" href="/vendor/highlight/styles/github.min.css">
   <style>
-    body { margin: 0; padding: 24px 32px 64px; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
-    .path { color: #666; font-size: 13px; word-break: break-all; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 16px; }
-    .markdown-body { max-width: 920px; margin: 0 auto; }
+    body { margin: 0; background: #f4f6f7; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .page { max-width: 960px; margin: 0 auto; padding: 24px 24px 48px; }
+    .share-header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+      padding: 12px 20px; background: #fff; border: 1px solid #e3e8eb; border-radius: 10px; margin-bottom: 20px; }
+    .share-header .doc { font-size: 16px; font-weight: 600; word-break: break-all; }
+    .share-header .meta { font-size: 12.5px; color: #8a97a0; }
+    .share-header .badge { margin-left: auto; font-size: 12px; color: #0e7c86; background: #e6f4f5;
+      border-radius: 12px; padding: 3px 10px; white-space: nowrap; }
+    .markdown-body { background: #fff; border: 1px solid #e3e8eb; border-radius: 10px; padding: 32px 40px; }
     .markdown-body pre { overflow-x: auto; }
+    .share-footer { text-align: center; color: #a7b2ba; font-size: 12px; margin-top: 24px; }
     .error { color: #b23a48; }
+    @media (max-width: 640px) { .markdown-body { padding: 20px; } }
   </style>
 </head>
 <body>
-  <div class="path" id="path-label">${escapeHtml(share.path)}</div>
-  <article class="markdown-body" id="content">加载中…</article>
+  <div class="page">
+    <div class="share-header">
+      <span class="doc">${escapeHtml(docName)}</span>
+      <span class="meta">${escapeHtml(share.path)}</span>
+      <span class="badge">${escapeHtml(expiryText)}</span>
+    </div>
+    <article class="markdown-body" id="content">加载中…</article>
+    <div class="share-footer">由知识库浏览器分享</div>
+  </div>
   <script src="/vendor/marked/marked.umd.js"></script>
   <script src="/vendor/dompurify/purify.min.js"></script>
   <script src="/vendor/highlight/highlight.min.js"></script>

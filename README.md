@@ -5,10 +5,13 @@
 ## 启动
 
 ```bash
-npm install && npm start
+./kws start     # 后台启动
+./kws restart   # 重启
+./kws stop      # 停止
+./kws status    # 查看状态
 ```
 
-打开 http://localhost:8080 （默认 8080 端口，在 `config.json` 中修改）。
+打开 http://localhost:8080 （默认 8080 端口，在 `config.json` 中修改）。日志在 `kws.log`（首次启动日志中会打印初始 admin 密码）。也可用 `npm start` 前台运行。
 
 ## 配置
 

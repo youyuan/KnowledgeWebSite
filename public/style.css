@@ -35,12 +35,18 @@ button { cursor: pointer; }
 
 /* 分享弹层 */
 .share-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
-.share-card { background: #fff; border-radius: 8px; padding: 20px 24px; width: 420px; max-width: 90vw; box-shadow: 0 8px 24px rgba(0,0,0,.2); }
-.share-card h3 { margin: 0 0 12px; font-size: 16px; }
-.share-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-.share-options label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
-.share-custom-days { width: 72px; padding: 2px 6px; }
-.share-result { margin-bottom: 12px; }
-.share-url { width: 100%; padding: 6px 8px; margin-bottom: 6px; }
+.share-card { background: #fff; border-radius: 12px; padding: 24px 28px; width: 440px; max-width: 90vw; box-shadow: 0 8px 32px rgba(0,0,0,.22); }
+.share-card h3 { margin: 0 0 16px; font-size: 16px; }
+.share-options { display: flex; gap: 8px; margin-bottom: 16px; }
+.share-option { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 8px 4px;
+  border: 1px solid #d5dde1; border-radius: 8px; cursor: pointer; font-size: 13px; user-select: none; }
+.share-option:has(:checked) { border-color: #0e7c86; background: #e6f4f5; color: #0e7c86; font-weight: 600; }
+.share-custom-days { width: 48px; padding: 2px 4px; border: 1px solid #d5dde1; border-radius: 4px; font-size: 13px; }
+.share-result { border-top: 1px solid #eee; padding-top: 16px; }
+.share-link-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.share-url { flex: 1; padding: 8px 10px; border: 1px solid #d5dde1; border-radius: 8px; font-size: 13px;
+  background: #f6f8fa; color: #333; }
+.share-copy { padding: 8px 20px; border: none; border-radius: 8px; background: #0e7c86; color: #fff;
+  font-size: 14px; white-space: nowrap; }
+.share-copy:hover { background: #11616b; }
 .share-expires { margin: 0; font-size: 13px; color: #666; }
-.share-actions { display: flex; gap: 8px; justify-content: flex-end; }

@@ -3,3 +3,5 @@ content/
 config.json
 .auth-secret
 shares.json
+.kws.pid
+kws.log
