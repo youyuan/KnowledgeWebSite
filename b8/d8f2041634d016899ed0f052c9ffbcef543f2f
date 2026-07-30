@@ -1,0 +1,34 @@
+server/index.js
+  s_c35b29c67263cf::t_4473c902f40bcb 10
+  s_c35b29c67263cf::t_00836fcc5c7917 18
+server/routes/share.js
+  s_c35b29c67263cf::t_4cbd09ada2ebf6 1-208
+server/services/shareStore.js
+  s_c35b29c67263cf::t_31b02ca9dae053 1-57
+server/middleware/auth.js
+  s_c35b29c67263cf::t_1d1a6dcc0b2bde 3,7-8
+test/share.test.js
+  s_c35b29c67263cf::t_2254e9c6bbae44 1-3,5-26,29-146,168-214
+  s_c35b29c67263cf::t_9fe9e6cf006076 147-167
+  s_c35b29c67263cf::t_4d2fec0444b9cc 4
+  s_c35b29c67263cf::t_78b0bd834d9a2d 27-28
+server/services/config.js
+  s_c35b29c67263cf::t_b9446da77d6ea9 81-86
+  s_c35b29c67263cf::t_4cdf10a8f2d7b1 102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "b8d8f2041634d016899ed0f052c9ffbcef543f2f",
+  "prompts": {},
+  "sessions": {
+    "s_c35b29c67263cf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54d41c17-8996-40fd-8a3f-1f67f33dd8de",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
