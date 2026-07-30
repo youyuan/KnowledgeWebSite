@@ -1,0 +1,22 @@
+public/style.css
+  s_c35b29c67263cf::t_bbbc074460c201 35-46
+public/app.js
+  s_c35b29c67263cf::t_e3baa031f3c323 289
+  s_c35b29c67263cf::t_d6c46e3ba65054 146-267,273
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "dba861f3d50b96f37aee032515dc43ca1b7e6b5c",
+  "prompts": {},
+  "sessions": {
+    "s_c35b29c67263cf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54d41c17-8996-40fd-8a3f-1f67f33dd8de",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
