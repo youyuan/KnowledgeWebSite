@@ -1,0 +1,20 @@
+public/app.js
+  s_c35b29c67263cf::t_961463a8bfd25d 230-250,256-258
+  s_c35b29c67263cf::t_9434895ca83ccc 226-229
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "7930ad5f8bde36c8a785966b8014b01c44d67d75",
+  "prompts": {},
+  "sessions": {
+    "s_c35b29c67263cf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54d41c17-8996-40fd-8a3f-1f67f33dd8de",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
