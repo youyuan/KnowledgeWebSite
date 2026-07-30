@@ -2,3 +2,4 @@ node_modules/
 content/
 config.json
 .auth-secret
+shares.json
