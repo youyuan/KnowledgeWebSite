@@ -1,0 +1,21 @@
+docs/superpowers/specs/2026-07-30-doc-share-design.md
+  s_c35b29c67263cf::t_1e902e1d01f36a 1-59
+docs/superpowers/plans/2026-07-30-doc-share.md
+  s_c35b29c67263cf::t_baf17f06a722fb 1-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "68f61758d67d02ebdfbd7e0589f37a74a78766fd",
+  "prompts": {},
+  "sessions": {
+    "s_c35b29c67263cf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54d41c17-8996-40fd-8a3f-1f67f33dd8de",
+        "model": "k3"
+      },
+      "human_author": "GL-kuangdaozhen <daozhen.kuang@gl-inet.com>"
+    }
+  }
+}
