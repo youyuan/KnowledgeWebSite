@@ -143,11 +143,134 @@ function resolveMedia(container, relPath) {
   });
 }
 
+// 分享弹层 DOM 结构：
+// <div class="share-overlay">                        遮罩层，点击卡片以外的区域关闭
+//   <div class="share-card">                         居中卡片
+//     <h3>分享文档</h3>
+//     <div class="share-options">                    有效期单选（7 天默认选中 / 30 天 / 永久 / 自定义）
+//       <label><input type="radio" name="share-days" value="7" checked> 7 天</label>
+//       <label><input type="radio" name="share-days" value="30"> 30 天</label>
+//       <label><input type="radio" name="share-days" value=""> 永久</label>
+//       <label><input type="radio" name="share-days" value="custom"> 自定义
+//         <input type="number" class="share-custom-days" min="1" max="365"> 天</label>
+//     </div>
+//     <div class="share-result" hidden>              生成成功后显示
+//       <input class="share-url" readonly>           完整链接；复制失败时选中文本供手动复制
+//       <p class="share-expires">…</p>               过期时间文字（永久显示「永久有效」）
+//     </div>
+//     <div class="share-actions">
+//       <button class="share-generate">生成链接</button>
+//       <button class="share-copy" hidden>复制</button>
+//       <button class="share-close">关闭</button>
+//     </div>
+//   </div>
+// </div>
+function openShareDialog(relPath) {
+  const overlay = document.createElement('div');
+  overlay.className = 'share-overlay';
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+
+  const card = document.createElement('div');
+  card.className = 'share-card';
+
+  const title = document.createElement('h3');
+  title.textContent = '分享文档';
+
+  const options = document.createElement('div');
+  options.className = 'share-options';
+  const customInput = document.createElement('input');
+  customInput.type = 'number';
+  customInput.className = 'share-custom-days';
+  customInput.min = 1;
+  customInput.max = 365;
+  for (const [value, text] of [['7', '7 天'], ['30', '30 天'], ['', '永久'], ['custom', '自定义']]) {
+    const label = document.createElement('label');
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = 'share-days';
+    radio.value = value;
+    if (value === '7') radio.checked = true;
+    label.append(radio, document.createTextNode(text));
+    if (value === 'custom') label.append(customInput, document.createTextNode('天'));
+    options.append(label);
+  }
+  customInput.onfocus = () => { card.querySelector('input[value="custom"]').checked = true; };
+
+  const result = document.createElement('div');
+  result.className = 'share-result';
+  result.hidden = true;
+  const urlInput = document.createElement('input');
+  urlInput.className = 'share-url';
+  urlInput.readOnly = true;
+  const expires = document.createElement('p');
+  expires.className = 'share-expires';
+  result.append(urlInput, expires);
+
+  const actions = document.createElement('div');
+  actions.className = 'share-actions';
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'share-copy';
+  copyBtn.textContent = '复制';
+  copyBtn.hidden = true;
+  copyBtn.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(urlInput.value);
+      copyBtn.textContent = '已复制';
+    } catch {
+      // clipboard API 不可用（如非安全上下文）时降级：选中链接让用户手动复制
+      urlInput.focus();
+      urlInput.select();
+      copyBtn.textContent = '请手动复制（已选中）';
+    }
+  };
+  const genBtn = document.createElement('button');
+  genBtn.className = 'share-generate';
+  genBtn.textContent = '生成链接';
+  genBtn.onclick = async () => {
+    const selected = card.querySelector('input[name="share-days"]:checked').value;
+    let days = null;
+    if (selected === 'custom') {
+      days = Number(customInput.value);
+      if (!Number.isInteger(days) || days < 1 || days > 365) {
+        alert('自定义有效期需为 1–365 的整数天数');
+        return;
+      }
+    } else if (selected !== '') {
+      days = Number(selected);
+    }
+    genBtn.disabled = true;
+    try {
+      const { url, expiresAt } = await api(`/api/repos/${state.current}/share`, {
+        method: 'POST', body: { path: relPath, days },
+      });
+      urlInput.value = location.origin + url;
+      expires.textContent = expiresAt ? `有效期至 ${new Date(expiresAt).toLocaleString()}` : '永久有效';
+      result.hidden = false;
+      copyBtn.hidden = false;
+      copyBtn.textContent = '复制';
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      genBtn.disabled = false;
+    }
+  };
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'share-close';
+  closeBtn.textContent = '关闭';
+  closeBtn.onclick = () => overlay.remove();
+  actions.append(genBtn, copyBtn, closeBtn);
+
+  card.append(title, options, result, actions);
+  overlay.append(card);
+  document.body.append(overlay);
+}
+
 function renderMarkdown(content, relPath) {
   const main = $('#main');
   main.innerHTML = '';
   main.append(toolbar(relPath, [
     button('编辑', () => renderEditor(content, relPath)),
+    button('分享', () => openShareDialog(relPath)),
     button('新标签页打开', () => window.open(`/view.html?id=${encodeURIComponent(state.current)}&path=${encodeURIComponent(relPath)}`, '_blank')),
   ]));
   const article = document.createElement('article');
@@ -163,6 +286,7 @@ function renderHtmlPreview(relPath) {
   main.innerHTML = '';
   main.append(toolbar(relPath, [
     button('源码', () => openHtmlSource(relPath)),
+    button('分享', () => openShareDialog(relPath)),
     button('新标签页打开', () => window.open(rawUrl(relPath), '_blank')),
   ]));
   const iframe = document.createElement('iframe');

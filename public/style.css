@@ -32,3 +32,15 @@ button { cursor: pointer; }
 .placeholder { color: #999; }
 #tree summary { cursor: pointer; }
 #tree summary:hover, #tree a.file:hover { text-decoration: underline; }
+
+/* 分享弹层 */
+.share-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.share-card { background: #fff; border-radius: 8px; padding: 20px 24px; width: 420px; max-width: 90vw; box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+.share-card h3 { margin: 0 0 12px; font-size: 16px; }
+.share-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.share-options label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.share-custom-days { width: 72px; padding: 2px 6px; }
+.share-result { margin-bottom: 12px; }
+.share-url { width: 100%; padding: 6px 8px; margin-bottom: 6px; }
+.share-expires { margin: 0; font-size: 13px; color: #666; }
+.share-actions { display: flex; gap: 8px; justify-content: flex-end; }
